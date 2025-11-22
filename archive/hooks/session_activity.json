@@ -1,0 +1,605 @@
+{
+  "21ecce60-83d1-4a2a-bd60-4642a7a3f5e1": {
+    "files_edited": [
+      "latest-ss.sh"
+    ],
+    "files_created": [],
+    "commands_run": 4,
+    "agents_launched": [],
+    "last_prompt": "/ss ",
+    "all_prompts": [
+      "/specs ",
+      "/ss ",
+      "i should only see 1 screenshot ",
+      "i should only see 1 latest screenshot in @.claude/screenshots/",
+      "/ss "
+    ],
+    "last_activity": "2025-10-05T01:04:40.461255"
+  },
+  "a4e17110-8983-41ad-a29b-8873620e31b7": {
+    "files_edited": [
+      "TiptapEditor.jsx",
+      "HeaderExplorer.jsx",
+      "RightPanel.jsx",
+      "Sidebar.jsx",
+      "EditorHeader.jsx"
+    ],
+    "files_created": [],
+    "commands_run": 1,
+    "agents_launched": [],
+    "last_prompt": "clear",
+    "all_prompts": [
+      "/ss the ui look so bad",
+      "/ss make sure to match this ui ",
+      "fix the ui first",
+      "fix the spacing first please make sure to match the styling from @prototype/v1/ ",
+      "clear"
+    ],
+    "last_activity": "2025-10-05T01:31:27.182368"
+  },
+  "5b3db48b-bf97-4bab-9d9d-b93fe06dd653": {
+    "files_edited": [
+      "index.html",
+      "script.js",
+      "styles.css",
+      "ai-features.js",
+      "mock-ai-completion.js",
+      "README.md",
+      "mock-tiptap.js",
+      "mock-summarization.js"
+    ],
+    "files_created": [
+      "ai-features.js",
+      "mock-ai-completion.js",
+      "README.md",
+      "mock-tiptap.js",
+      "mock-summarization.js"
+    ],
+    "commands_run": 5,
+    "agents_launched": [],
+    "last_prompt": "can you mock the summarization features with js.  Also the text area isnt scrolling so fix it.",
+    "all_prompts": [
+      "[Image #1] the ghost text is appearing but its in the next line ",
+      "you know what remove tip tap editor and lets go full vanilla. Just make a mock marks feature in a seperate js to mock tiptap features.",
+      "/ss when the autocompletion was accepted it returns full word",
+      "can you mock the summarization features.  Also the text area isnt scrolling so fix it.",
+      "can you mock the summarization features with js.  Also the text area isnt scrolling so fix it."
+    ],
+    "last_activity": "2025-10-05T23:15:10.263356"
+  },
+  "4f449ee4-e631-472a-8e12-f50aa90e8ff0": {
+    "files_edited": [
+      "classic-style.html",
+      "styles.css",
+      "ai-features.js",
+      "mock-ai-completion.js",
+      "mock-summarization.js",
+      "mock-tiptap.js",
+      "script.js",
+      "ai-features.css",
+      "note-list.js",
+      "note-list.css",
+      "note-list.html",
+      "theme-service.js",
+      "tag.css"
+    ],
+    "files_created": [
+      "variables.css",
+      "base.css",
+      "sidebar.css",
+      "editor-header.css",
+      "editor-toolbar.css",
+      "editor-content.css",
+      "status-bar.css",
+      "right-panel.css",
+      "modal.css",
+      "scrollbar.css",
+      "header-explorer.css",
+      "sidebar-toggle.css",
+      "responsive.css",
+      "ai-features.css",
+      "styles.css",
+      "editor-service.js",
+      "toolbar-service.js",
+      "theme-service.js",
+      "sidebar-service.js",
+      "modal-service.js",
+      "panel-service.js",
+      "search-service.js",
+      "autosave-service.js",
+      "title-service.js",
+      "explorer-service.js",
+      "toolbar-overflow-service.js",
+      "utils.js",
+      "script.js",
+      "note-list.html",
+      "note-list.css",
+      "note-list.js",
+      "card.css",
+      "tag.css"
+    ],
+    "commands_run": 28,
+    "agents_launched": [],
+    "last_prompt": "<span class=\"tag purple\"><span class=\"tag-dot\"></span>Pharmacology</span> in @prototype/v1/note-list.html you have to remove the coloring in the wrapp...",
+    "all_prompts": [
+      "/ss i want it to be like this",
+      "/ss i want it to be like this",
+      "apply it to the note list page ",
+      "update the cards not the sidebar",
+      "<span class=\"tag purple\"><span class=\"tag-dot\"></span>Pharmacology</span> in @prototype/v1/note-list.html you have to remove the coloring in the wrapp..."
+    ],
+    "last_activity": "2025-10-06T16:49:44.287309"
+  },
+  "e319e770-ab61-42b6-8d4d-2ede57799fe5": {
+    "files_edited": [],
+    "files_created": [
+      "settings.json"
+    ],
+    "commands_run": 4,
+    "agents_launched": [],
+    "last_prompt": "[\"ERROR\" - 4:43:50 PM] Invalid prettier configuration file detected.\nJSONError: JSON Error in /home/emhar/nexly/.prettierrc.json:\n\"undefined\" is not v...",
+    "all_prompts": [
+      "[\"INFO\" - 4:40:09 PM] Extension Name: esbenp.prettier-vscode.\n[\"INFO\" - 4:40:09 PM] Extension Version: 11.0.0.\n[\"ERROR\" - 4:40:10 PM] Invalid prettier...",
+      "at loadPrettierConfig2 (file:///home/emhar/nexly/node_modules/prettier/index.mjs:13871:24)\n    at Module.resolveConfig (file:///home/emhar/nexly/node_...",
+      "do we have to configure @.vscode/settings.json",
+      "[\"ERROR\" - 4:43:50 PM] Invalid prettier configuration file detected.\nJSONError: JSON Error in /home/emhar/nexly/.prettierrc.json:\n\"undefined\" is not v..."
+    ],
+    "last_activity": "2025-10-06T16:44:13.736202"
+  },
+  "c8fe98a7-b688-420c-a7dd-a5334fe5b80a": {
+    "files_edited": [
+      "settings.json"
+    ],
+    "files_created": [],
+    "commands_run": 1,
+    "agents_launched": [],
+    "last_prompt": "live server is using chromium still",
+    "all_prompts": [
+      "can you configure @.vscode/settings.json to use real chrome browser and not chromium",
+      "can you configure @.vscode/settings.json to use real chrome browser and not chromium for live server",
+      "live server is using chromium still"
+    ],
+    "last_activity": "2025-10-06T17:18:08.036649"
+  },
+  "f536bce2-92d0-4fa5-b0fa-62746e5f1cd7": {
+    "files_edited": [
+      "settings.json"
+    ],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "can you configure it so the browser can appear in a tab here in cursor ?",
+    "all_prompts": [
+      "live server is still using chromium instead of chrome. Im in wsl. Can you fix this?",
+      "/ss live server is still using chromium instead of chrome. Im in wsl. Can you fix this?",
+      "can you configure it so the browser can appear in a tab here in cursor ?"
+    ],
+    "last_activity": "2025-10-06T17:22:22.325911"
+  },
+  "d4eed80c-c2c5-478c-89b1-6e09b8eb404b": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "continue ",
+    "all_prompts": [
+      "/ss can you make a dialog like this",
+      "continue "
+    ],
+    "last_activity": "2025-10-06T17:38:39.928481"
+  },
+  "4abb2292-14bc-45d4-b264-29cb787f33df": {
+    "files_edited": [
+      "dialog-demo.html",
+      "note-list.html",
+      "note-list.js",
+      "script.js",
+      "classic-style.css"
+    ],
+    "files_created": [
+      "dialog.css",
+      "dialog.js",
+      "dialog-demo.html"
+    ],
+    "commands_run": 19,
+    "agents_launched": [],
+    "last_prompt": "i move the dialog-demo in @prototype/v1/demos/dialog-demo.html please fix the paths",
+    "all_prompts": [
+      "32Refused to apply style from '<URL>' because its MIME type ('text/html') is not a supported stylesheet MIME type, and strict MIME checking is enabled...",
+      "fix @prototype/v1/components/styles/ ",
+      "sorry fix @prototype/v1/styles.css ",
+      "fix @prototype/v1/classic-style.css ",
+      "i move the dialog-demo in @prototype/v1/demos/dialog-demo.html please fix the paths"
+    ],
+    "last_activity": "2025-10-06T17:53:00.173234"
+  },
+  "01bbef10-3930-4ca7-82b6-93e195d04df7": {
+    "files_edited": [
+      "note-list.html",
+      "note-list.js",
+      "theme-service.js",
+      "theme-toggle.css",
+      "theme-toggle-demo.html",
+      "simple-theme-toggle.html",
+      "theme-toggle-component.js",
+      "dialog.js",
+      "input-demo.html",
+      "theme-toggle.js",
+      "script.js",
+      "editor-toolbar.css",
+      "mock-tiptap.js",
+      "editor-header.css",
+      "classic-style.html",
+      "floating-headings.css",
+      "select.js",
+      "select.css",
+      "dropdown.js",
+      "dropdown.css",
+      "study-mode.html",
+      "minimal-style.html",
+      "editor-content.css"
+    ],
+    "files_created": [
+      "theme-toggle.html",
+      "theme-toggle.css",
+      "theme-toggle.js",
+      "theme-toggle-demo.html",
+      "simple-theme-toggle.html",
+      "theme-toggle-component.js",
+      "dialog-helper.js",
+      "select.html",
+      "select.css",
+      "select.js",
+      "select-demo.html",
+      "input.html",
+      "input.css",
+      "input.js",
+      "input-demo.html",
+      "tooltip.html",
+      "tooltip.css",
+      "tooltip.js",
+      "tooltip-demo.html",
+      "tabs.css",
+      "tabs.js",
+      "tabs.html",
+      "tabs-demo.html",
+      "dropdown.css",
+      "dropdown.js",
+      "dropdown-demo.html",
+      "floating-headings.css",
+      "floating-headings.js",
+      "edit-mode.html",
+      "study-mode.html",
+      "study-mode.css",
+      "study-mode.js",
+      "minimal-style.html"
+    ],
+    "commands_run": 17,
+    "agents_launched": [],
+    "last_prompt": "if the user hasnt typed yet and then cancel typing by clicking outside the editor. The placeholder must appear again",
+    "all_prompts": [
+      "Uncaught TypeError: Cannot read properties of null (reading 'setAttribute')\n    at updateThemeIcon (minimal-style.html:150:14)\n    at minimal-style.ht...",
+      "minimal-style.html:157 Uncaught ReferenceError: Tiptap is not defined\n    at minimal-style.html:157:22",
+      "Add some place holder guide that will will guide the user. ",
+      "it has to be a place holder that when clicked it will dissapear",
+      "if the user hasnt typed yet and then cancel typing by clicking outside the editor. The placeholder must appear again"
+    ],
+    "last_activity": "2025-10-07T02:23:25.140852"
+  },
+  "e1cdd951-eca8-4b33-b8fe-b5380962dd68": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "/ss ",
+    "all_prompts": [
+      "/ss tell me what you see",
+      "/ss "
+    ],
+    "last_activity": "2025-10-20T00:54:49.912275"
+  },
+  "61ebf40d-d169-4359-a081-ddcf07525e86": {
+    "files_edited": [
+      "prd.md"
+    ],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "we use tauri not Electron wrapper",
+    "all_prompts": [
+      "- Feature 5: Keep Definition-on-Demand (Study Mode)\n- NEW Feature: Cloze Deletions for Active Recall (Study Mode) \n- Highlight text \u2192 \"Create Cloze\" \u2192...",
+      "There should be 3 mode. Create note mode, edit mode, and study mode. During create node mode. Dif versioning should be optional but disabled by defaul...",
+      "There should be 3 mode. Create note mode, edit mode, and study mode. During create note mode. Dif versioning should be optional but disabled by defaul...",
+      "History should still be present in create note mode and also compare side by side like a dif before restoring version. The difference between create n...",
+      "we use tauri not Electron wrapper"
+    ],
+    "last_activity": "2025-10-20T02:05:12.015000"
+  },
+  "213cf1b9-7da7-47ef-93f0-bad742c65ec2": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 1,
+    "agents_launched": [],
+    "last_prompt": "formulate a api spec based on all current specs we have in @.claude/docs/specs/ ",
+    "all_prompts": [
+      "formulate a api spec based on all current specs we have in @.claude/docs/specs/ "
+    ],
+    "last_activity": "2025-10-20T02:11:25.646909"
+  },
+  "6cab8a21-a0ec-4466-9609-e7c1a6fded65": {
+    "files_edited": [
+      "tech-specs.md"
+    ],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "revise @.claude/docs/specs/tech-specs.md with new prd @.claude/docs/specs/prd.md ",
+    "all_prompts": [
+      "revise @.claude/docs/specs/tech-specs.md with new prd @.claude/docs/specs/prd.md "
+    ],
+    "last_activity": "2025-10-20T02:21:36.418805"
+  },
+  "130e1eba-8d4f-4c59-8f24-9139f87e04a5": {
+    "files_edited": [
+      "database-architecture.md"
+    ],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md then also revise @.claude/docs/specs/database-architecture.md...",
+    "all_prompts": [
+      "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md then also revise @.claude/docs/specs/database-architecture.md...",
+      "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md then also revise @.claude/docs/specs/database-architecture.md..."
+    ],
+    "last_activity": "2025-10-20T02:29:58.165022"
+  },
+  "32f4bdad-2f80-451a-ab94-e31d3006ab3a": {
+    "files_edited": [],
+    "files_created": [
+      "ai-model-specs.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "Read @.claude/docs/specs/database-architecture.md , @.claude/docs/specs/tech-specs.md @.claude/docs/specs/prd.md then formulate ai-model specs @.claud...",
+    "all_prompts": [
+      "Read @.claude/docs/specs/database-architecture.md , @.claude/docs/specs/tech-specs.md @.claude/docs/specs/prd.md then formulate ai-model specs @.claud..."
+    ],
+    "last_activity": "2025-10-20T18:01:00.651859"
+  },
+  "4504516a-ced3-4adc-969b-123bf83f414c": {
+    "files_edited": [],
+    "files_created": [
+      "api-specs.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "Read @.claude/docs/specs/database-architecture.md , @.claude/docs/specs/tech-specs.md @.claude/docs/specs/prd.md then formulate api-specs @.claude/doc...",
+    "all_prompts": [
+      "Read @.claude/docs/specs/database-architecture.md , @.claude/docs/specs/tech-specs.md @.claude/docs/specs/prd.md then formulate api-specs @.claude/doc..."
+    ],
+    "last_activity": "2025-10-20T18:05:55.887399"
+  },
+  "d31b2d40-ec11-467d-b3a7-e75291e96d83": {
+    "files_edited": [],
+    "files_created": [
+      "security-specs.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "formulate a plan first",
+    "all_prompts": [
+      "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md and also @.claude/docs/specs/database-architecture.md then fo...",
+      "formulate a plan first"
+    ],
+    "last_activity": "2025-10-20T18:06:58.087796"
+  },
+  "5b44e30f-a2cd-4776-b62d-40519773f187": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md and also @.claude/docs/specs/database-architecture.md then fo...",
+    "all_prompts": [
+      "read the newly revised @.claude/docs/specs/prd.md  and @.claude/docs/specs/tech-specs.md and also @.claude/docs/specs/database-architecture.md then fo..."
+    ],
+    "last_activity": "2025-10-20T18:05:52.692234"
+  },
+  "4ad2b54a-1c97-41e6-a305-5ac748db49c4": {
+    "files_edited": [],
+    "files_created": [
+      "testing-specs.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "read the newly revised @.claude/docs/specs/prd.md, @.claude/docs/specs/tech-specs.md, @.claude/docs/specs/database-architecture.md and @.claude/docs/s...",
+    "all_prompts": [
+      "read the newly revised @.claude/docs/specs/prd.md, @.claude/docs/specs/tech-specs.md, @.claude/docs/specs/database-architecture.md and @.claude/docs/s..."
+    ],
+    "last_activity": "2025-10-20T18:10:05.158525"
+  },
+  "406dd287-3827-4d75-ace4-98416b85e2d7": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "read all specs in @.claude/docs/specs/ and then revise @.claude/docs/specs/design-specs.md ",
+    "all_prompts": [
+      "read all specs in @.claude/docs/specs/ and then revise @.claude/docs/specs/design-specs.md "
+    ],
+    "last_activity": "2025-10-20T18:11:38.446648"
+  },
+  "a4bd722c-109d-49fc-99cb-adf9d31e8364": {
+    "files_edited": [
+      "design-specs.md"
+    ],
+    "files_created": [
+      "design-specs.md"
+    ],
+    "commands_run": 1,
+    "agents_launched": [],
+    "last_prompt": "continue pending tasks",
+    "all_prompts": [
+      "read all specs in @.claude/docs/specs/ and then revise @.claude/docs/specs/design-specs.md ",
+      "Also do a research first using firecrawl mcp for the best ux for this app",
+      "letss use red instead here : Edit Mode purple accent (#9333EA)",
+      "continue",
+      "continue pending tasks"
+    ],
+    "last_activity": "2025-10-20T19:00:45.886730"
+  },
+  "21b1f4bd-2c5f-4eaa-a8bf-7c8b8a60ac3e": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "seperate @.claude/docs/specs/design-specs.md ui and ux into a seperate file called ui-specs.md and ux-specs.md. Still keep @.claude/docs/specs/design-...",
+    "all_prompts": [
+      "seperate @.claude/docs/specs/design-specs.md ui and ux into a seperate file called ui-specs.md and ux-specs.md. Still keep @.claude/docs/specs/design-..."
+    ],
+    "last_activity": "2025-10-20T19:06:01.706800"
+  },
+  "2df2d98a-57d7-41bb-85b1-690d59ab7856": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 1,
+    "agents_launched": [],
+    "last_prompt": "seperate @.claude/docs/specs/design-specs.md ui and ux into a seperate file called ui-specs.md and ux-specs.md. Still keep @.claude/docs/specs/design-...",
+    "all_prompts": [
+      "seperate @.claude/docs/specs/design-specs.md ui and ux into a seperate file called ui-specs.md and ux-specs.md. Still keep @.claude/docs/specs/design-..."
+    ],
+    "last_activity": "2025-10-20T19:07:47.291142"
+  },
+  "049b407c-8d86-47ba-a21d-beb7d24da64b": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "make @.claude/docs/specs/design-specs.md leaner around max 300 lines",
+    "all_prompts": [
+      "make @.claude/docs/specs/design-specs.md leaner around max 300 lines"
+    ],
+    "last_activity": "2025-10-20T19:09:41.348426"
+  },
+  "64c2655b-1376-40e2-9bdf-29136f56a98c": {
+    "files_edited": [],
+    "files_created": [
+      "design-specs.md"
+    ],
+    "commands_run": 2,
+    "agents_launched": [],
+    "last_prompt": "make @.claude/docs/specs/design-specs.md more \"higher level\" and leaner",
+    "all_prompts": [
+      "make @.claude/docs/specs/design-specs.md more \"higher level\" and leaner"
+    ],
+    "last_activity": "2025-10-20T19:12:13.337396"
+  },
+  "15d5d243-1bc6-4b6a-92d7-97c34b2f5939": {
+    "files_edited": [],
+    "files_created": [
+      "CLAUDE.md"
+    ],
+    "commands_run": 14,
+    "agents_launched": [
+      "Explore"
+    ],
+    "last_prompt": "/init ",
+    "all_prompts": [
+      "/init "
+    ],
+    "last_activity": "2025-10-20T19:22:24.566791"
+  },
+  "f7c4d59b-7750-4d8e-91f3-5f85d42243ff": {
+    "files_edited": [
+      "security-specs.md",
+      "database-specs.md"
+    ],
+    "files_created": [
+      "prd.md",
+      "tech-specs.md",
+      "api-specs.md",
+      "ai-model-specs.md",
+      "testing-specs.md",
+      "design-specs.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "- GPT-4o-mini for autocomplete we use 4.1 nano",
+    "all_prompts": [
+      "revise all specs in @.claude/docs/specs/ and implement this suggestion Final Suggestion: Ship This 4-Week MVP\nCore Principle\nValidate your three-mode ...",
+      "- GPT-4o-mini for autocomplete we use 4.1 nano"
+    ],
+    "last_activity": "2025-10-20T20:43:21.499156"
+  },
+  "528023e3-7ee3-4004-8911-774b3f3d367e": {
+    "files_edited": [],
+    "files_created": [
+      "download-logos.js",
+      "rename-logos.sh"
+    ],
+    "commands_run": 7,
+    "agents_launched": [],
+    "last_prompt": "rename all the logos in @src/assets/nba-logos/ with this format \"atlanta-hawks.svg\"",
+    "all_prompts": [
+      "@scraper.js doesnt return the images url",
+      "can you get those images yourself using playwright mcp and save it to @src/assets/nba-logos/",
+      "rename all the logos in @src/assets/nba-logos/ with this format \"atlanta-hawks.svg\""
+    ],
+    "last_activity": "2025-10-21T19:09:37.721141"
+  },
+  "915922b8-db6e-46f0-96cc-0d99a041ddbb": {
+    "files_edited": [],
+    "files_created": [
+      "team-stats.ts",
+      "README-TEAM-STATS.md"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "continue make a README",
+    "all_prompts": [
+      "[\n  [\n    1610612737, 'Atlanta Hawks', 82,    40,\n    42,         0.488,           48.2,  43.4,\n    91.8,       0.472,           13.5,  37.7,\n    0.35...",
+      "[\n  [\n    1610612737, 'Atlanta Hawks', 82,    40,\n    42,         0.488,           48.2,  43.4,\n    91.8,       0.472,           13.5,  37.7,\n    0.35...",
+      "continue make a README"
+    ],
+    "last_activity": "2025-10-23T15:41:58.616916"
+  },
+  "172f5368-426c-4eb9-980b-f99cc1197a4d": {
+    "files_edited": [],
+    "files_created": [
+      "CLAUDE.md"
+    ],
+    "commands_run": 4,
+    "agents_launched": [],
+    "last_prompt": "/init ",
+    "all_prompts": [
+      "/init "
+    ],
+    "last_activity": "2025-10-23T15:48:00.000141"
+  },
+  "b907a8f6-4609-402c-9e5d-ab52aee447b5": {
+    "files_edited": [],
+    "files_created": [],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "can you gather the data i needed for winning odds in nba and shape the type from it? Heres the team stats [\n  [\n    1610612737, 'Atlanta Hawks', 82,  ...",
+    "all_prompts": [
+      "can you gather the data i needed for winning odds in nba and shape the type from it? Heres the team stats [\n  [\n    1610612737, 'Atlanta Hawks', 82,  ..."
+    ],
+    "last_activity": "2025-10-23T16:12:39.129430"
+  },
+  "cde1377c-0ad1-4467-89e5-dcf1c4fbd324": {
+    "files_edited": [],
+    "files_created": [
+      "nba-team-stats.ts",
+      "raw-stats.ts"
+    ],
+    "commands_run": 0,
+    "agents_launched": [],
+    "last_prompt": "can you also make a raw stats type?",
+    "all_prompts": [
+      "can you gather the data i needed for winning odds in nba and shape the type from it? Heres the team stats: Keys: [\n      'TEAM_ID',    'TEAM_NAME',  '...",
+      "Only generate the types for now",
+      "can you also make a raw stats type?"
+    ],
+    "last_activity": "2025-10-24T16:48:30.152511"
+  }
+}

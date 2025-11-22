@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "mcp__sequentialthinking__sequentialthinking",
+      "mcp__context7__get-library-docs",
+      "mcp__context7__resolve-library-id",
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__mcp-server-firecrawl__firecrawl_search",
+      "mcp__mcp-server-firecrawl__firecrawl_extract",
+      "mcp__zen__chat",
+      "mcp__zen__consensus"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(mkfs:*)",
+      "Bash(fdisk:*)",
+      "Bash(dd:*)",
+      "Bash(format:*)",
+      "Bash(chmod -R 000 /)",
+      "Bash(chown -R root /)",
+      "Bash(sudo rm -rf /)",
+      "Bash(sudo dd:*)",
+      "Bash(sudo mkfs:*)",
+      "Bash(sudo fdisk:*)",
+      "Bash(sudo format:*)",
+      "Bash(shutdown:*)",
+      "Bash(reboot:*)",
+      "Bash(halt:*)",
+      "Bash(init 0)",
+      "Bash(init 6)",
+      "Bash(systemctl poweroff)",
+      "Bash(systemctl reboot)",
+      "Bash(systemctl halt)",
+      "Bash(sudo shutdown:*)",
+      "Bash(sudo reboot:*)",
+      "Bash(sudo halt:*)",
+      "Bash(sudo init 0)",
+      "Bash(sudo init 6)",
+      "Bash(sudo systemctl poweroff)",
+      "Bash(sudo systemctl reboot)",
+      "Bash(sudo systemctl halt)"
+    ],
+    "ask": [
+      "ExitPlanMode"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "sequentialthinking",
+    "mcp-server-firecrawl",
+    "playwright",
+    "context7",
+    "shadcn",
+    "zen"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/switch-plan-mode.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/security.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/notify-ntfy.py",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/change-log.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/task-log.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/notify-ntfy.py",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/task-log-stop.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/notify-ntfy.py",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/change-log.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/notify-ntfy.py",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "SessionStart": [],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/compact-instructions.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /$CLAUDE_PROJECT_DIR/.claude/statusline-git-format.sh"
+  },
+  "outputStyle": "default"
+}
