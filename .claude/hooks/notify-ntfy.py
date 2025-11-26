@@ -521,34 +521,6 @@ def main():
             track_session_activity(input_data)
             # Don't send notifications for prompts, just track them
 
-        elif hook_event == "SessionStart":
-            # Clean up old session data (older than 7 days)
-            tracking_file = os.path.join(os.environ.get('CLAUDE_PROJECT_DIR', '.'), '.claude/hooks/session_activity.json')
-            if os.path.exists(tracking_file):
-                try:
-                    with open(tracking_file, 'r') as f:
-                        session_data = json.load(f)
-
-                    # Remove old sessions
-                    now = datetime.now()
-                    cleaned_data = {}
-                    for sid, data in session_data.items():
-                        last_activity = data.get('last_activity', '')
-                        if last_activity:
-                            try:
-                                last_time = datetime.fromisoformat(last_activity.replace('Z', '+00:00'))
-                                age_days = (now - last_time).days
-                                if age_days < 7:
-                                    cleaned_data[sid] = data
-                            except:
-                                cleaned_data[sid] = data  # Keep if can't parse date
-
-                    # Save cleaned data
-                    with open(tracking_file, 'w') as f:
-                        json.dump(cleaned_data, f, indent=2)
-                except:
-                    pass
-
         # Success - continue normally
         sys.exit(0)
 

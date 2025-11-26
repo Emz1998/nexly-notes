@@ -3,7 +3,7 @@ name: create-hooks
 description: Deploy hook-generator agent to create Claude hooks for various editor events
 allowed-tools: task, write
 argument-hint: <hook-name> <instructions>
-model: claude-opus-4-1-20250805
+model: sonnet
 ---
 
 ## 1. Context

@@ -2,7 +2,7 @@
 name: meta-agent
 description: Use PROACTIVELY this agent when you need to design and create optimal Claude Code subagents, update existing agents with new capabilities, revise agent configurations, analyze project requirements to identify specialized roles, or craft precise agent configurations with appropriate tool permissions and model tiers.
 tools: Write, Read
-model: sonnet
+model: opus
 color: purple
 ---
 

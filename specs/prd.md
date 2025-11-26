@@ -1,1007 +1,474 @@
-# NEXLY RN — Product Requirements Document (4-Week MVP - Next.js Stack)
+# NEXLY RN Product Requirements Document
 
-## 1. Product Overview
+## Overview
 
-- **Name:** NEXLY RN — AI-Powered Nursing Education Platform
-- **Elevator Pitch:** NEXLY RN is a focused note editor built for nursing students that combines AI-powered autocomplete for medical terminology with nursing-specific slash commands (/template, /formula) to help students capture lecture notes faster and study more effectively
-- **Problem:** Nursing students need fast note-taking tools that understand medical terminology and provide quick access to common note structures (care plans, med cards) and critical formulas (MAP, drip rates)—current tools require manual formatting and don't include nursing-specific shortcuts
-- **Solution:** NEXLY RN provides:
-  1. **AI Autocomplete:** GPT-4.1 nano suggests medical terms as you type, with dictionary fallback for offline use
-  2. **Slash Commands:** Type /template for nursing note structures (care plans, med cards, SOAP notes) or /formula for medical calculations (MAP, BMI, dosage)
-  3. **Reliable Sync:** Auto-saves every 30 seconds with offline support via IndexedDB → Firestore sync
+- **Name:** NEXLY RN - Nursing Note-Taking Application
 
-## 2. Goals & Success Criteria
+- **Elevator Pitch:** NEXLY RN empowers nursing students to capture knowledge faster with AI-powered medical autocomplete, nursing-specific templates, and bulletproof offline sync—so they can focus on becoming exceptional nurses instead of fighting their note-taking tools.
 
-### Primary Goals (4-Week MVP)
+- **Problem:** Nursing students face critical productivity barriers during lectures, clinicals, and study sessions:
 
-1. **Prove note-taking speed**: Users report "this is faster than [current method]"
-2. **Validate slash command adoption**: ≥60% of users use /template or /formula at least once in Week 1
-3. **Measure autocomplete effectiveness**: ≥40% acceptance rate for AI suggestions
-4. **Validate offline reliability**: Notes sync without data loss after offline editing
-5. **Confirm nursing-specific value**: Users report templates/formulas save time vs manual entry
+  - Generic note-taking tools don't understand medical terminology, forcing manual typing of complex drug names and pathophysiology terms
+  - Creating structured nursing documents (care plans, medication cards, SOAP notes) from scratch wastes 5-10 minutes per note
+  - Students struggle to recall critical clinical formulas (MAP, dosage calculations, drip rates) during exams and rotations
+  - Unreliable sync causes data loss anxiety during clinical rotations when internet connectivity is unstable
+  - Current solutions either lack nursing-specific features or are too complex for fast note-taking
 
-### Non-Goals (Out of Scope for MVP)
+- **Solution:**
 
-- **Deferred Features** (moved from original MVP scope):
-  - Study Mode (read-only with AI key term spotting)
-  - Inline diff view (changes since last save)
-  - Version history UI and snapshots
-  - Multiple editing modes (Create/Edit separation)
-- **Post-MVP Features**:
-  - Shorthand expansion
-  - Definition-on-demand
-  - Cloze deletion generator
-  - Audio recording/transcription
-  - Time-based lecture tracking
-  - Flashcards/quizzes
-  - Clinical documentation for patient care
-  - Real-time collaboration
-  - Native mobile apps (PWA only for MVP)
-  - LMS integrations
-  - Spaced repetition/scheduling
-  - Full visual concept maps
-  - Custom template builder
-  - Interactive formula calculator
+  - AI-powered medical autocomplete with real-time terminology suggestions during typing (one AI request = one suggestion batch per keystroke sequence)
+  - 5,000+ term nursing dictionary (sourced from OpenMD Nursing Terminology Database under CC BY-SA 4.0 license) as seamless fallback when offline or over AI quota
+  - Slash command system for instant template insertion (/template for care plans, SOAP notes, med cards)
+  - Clinical formula library with normal ranges (/formula for MAP, BMI, drip rates, dosage calculations)
+  - Bulletproof offline-first architecture with auto-save every 30 seconds, cloud sync, and last-write-wins conflict resolution with full version history
+  - Clean, distraction-free editor focused exclusively on speed and reliability
+  - Free tier with 100 AI requests/month and Pro tier with unlimited AI for $8.99/month via Stripe payment processing
 
-### Success Criteria (Definition of Done - 4-Week MVP)
+- **Goals:**
 
-_Note: Detailed metrics and decision matrix in Section 10_
+  1. Reduce note-taking time by 50% compared to generic tools through AI autocomplete and templates, measured via self-reported user surveys comparing time-to-completion for creating standard nursing documents (care plan, med card) in NEXLY vs. Google Docs [Priority: P0]
+  2. Achieve 99%+ sync reliability with zero data loss during offline clinical rotations, measured by successful sync operations / total sync attempts [Priority: P0]
+  3. Reach 60%+ slash command adoption rate within first week of user onboarding, measured as percentage of users who execute at least one slash command in first 7 days [Priority: P0]
+  4. Convert 5% of free users to Pro tier within 3 months of launch [Priority: P1]
+  5. Maintain infrastructure costs under $85/month while supporting 1,000+ active users (breakdown: Vercel $20, Firebase $35, OpenAI API $25, monitoring $5) [Priority: P1]
+  6. Achieve 40%+ AI autocomplete acceptance rate, calculated as (accepted suggestions / total suggestions shown) per user session [Priority: P1]
+  7. Launch fully functional PWA with cross-platform support (desktop, tablet, mobile) [Priority: P0]
+  8. Build foundation for future NCLEX prep integration and community features [Priority: P2]
 
-After 2 weeks with 50 beta users, validate slash command adoption, AI autocomplete effectiveness, and gather data on note-taking speed improvements and system stability.
+- **Non-Goals (Out of Scope for MVP):**
+  - **Deferred Features:**
+    - Study Mode (read-only with AI key term spotting)
+    - Inline diff view (changes since last save)
+    - Version history UI and snapshots
+    - Multiple editing modes (Create/Edit separation)
+  - **Post-MVP Features:**
+    - Shorthand expansion
+    - Definition-on-demand
+    - Cloze deletion generator
+    - Audio recording/transcription
+    - Time-based lecture tracking
+    - Flashcards/quizzes
+    - Clinical documentation for patient care
+    - Real-time collaboration
+    - Native mobile apps (PWA only for MVP)
+    - LMS integrations
+    - Spaced repetition/scheduling
+    - Full visual concept maps
+    - Custom template builder
+    - Interactive formula calculator
 
-## 3. User Stories
+## User Stories
 
-### User: Pre-licensure Nursing Students (ADN/BSN)
+### User Story 1: Fast Medical Terminology Entry
 
-**Pain Points:**
+As a nursing student taking notes during a fast-paced pharmacology lecture, I want AI to autocomplete complex medical terms as I type, so that I can keep up with the professor without missing critical information.
 
-- Need fast note capture without UI clutter during fast-paced lectures
-- Manually formatting care plans, med cards, and assessment notes wastes 5-10 minutes per note
-- Forgetting critical formulas (MAP, drip rates, dosage calculations) during exams and clinicals
-- AI autocomplete in generic tools doesn't understand nursing/medical terminology
-- Losing work when laptop dies or internet cuts out during clinical rotations
-- Need offline access to notes during clinical rotations
+**Acceptance Scenarios:**
 
-**As a Pre-licensure Nursing Student, I want to:**
+- **Given I'm typing a medication name, when I type "met", then I see suggestions like "metoprolol", "metformin", "methotrexate" in real-time**
+- **Given I'm offline during clinical rotation, when I type medical terms, then the local 5,000+ term dictionary provides autocomplete suggestions**
+- **Given I've exceeded my monthly AI quota, when I continue typing, then the system seamlessly falls back to dictionary autocomplete without interruption**
+- **Given I accept an AI suggestion, when I press Tab or Enter, then the complete term is inserted and I can continue typing immediately**
 
-- **Fast Note-Taking**: Capture lecture notes rapidly with AI autocomplete suggesting medical terms as I type, with auto-save so I never lose work even if my laptop dies mid-lecture
-- **Nursing-Specific Shortcuts**: Type /template to instantly insert structured note formats (care plan, med card, SOAP note, assessment) instead of manually formatting every time
-- **Quick Formula Access**: Type /formula to insert critical medical calculations (MAP, BMI, drip rate, dosage calculation) with placeholders I can fill in
-- **Offline Access**: Access and edit my notes offline during clinical rotations, with automatic sync when I reconnect to WiFi
-- **PWA Installation**: Install as PWA on my tablet for faster access during clinicals
-- **Search and Organization**: Search across all my notes and organize by title, date, or last edited
+### User Story 2: Instant Nursing Template Insertion
 
-### User: Advanced Practice Nursing Students (MSN/DNP)
+As a nursing student creating a care plan for a patient case study, I want to instantly insert a structured care plan template, so that I can focus on clinical reasoning instead of formatting.
 
-**Pain Points:**
+**Acceptance Scenarios:**
 
-- Same as ADN/BSN students, but with more complex pathophysiology and pharmacology content
-- Need AI that understands graduate-level medical terminology and advanced practice concepts
+- **Given I type "/template" in the editor, when the slash command menu appears, then I see options for Care Plan, Medication Card, SOAP Note, Head-to-Toe Assessment, and Pathophysiology Outline**
+- **Given I select "Care Plan" from the menu, when it inserts, then I see pre-formatted sections for Nursing Diagnosis → Goals → Interventions → Evaluation with cursor positioned in the first field**
+- **Given I select "Medication Card", when it inserts, then I see structured fields for Drug → Classification → Action → Dose → Side Effects → Nursing Considerations**
+- **Given I'm creating a clinical note, when I use "/template" and select "SOAP Note", then I get Subjective → Objective → Assessment → Plan sections ready to fill**
 
-**As an Advanced Practice Nursing Student, I want to:**
+### User Story 3: Quick Clinical Formula Access
 
-- All the same features as ADN/BSN students, with AI autocomplete that understands advanced pathophysiology, pharmacology, and specialty-specific terminology
-- Templates for advanced practice note formats (differential diagnosis, treatment plans)
+As a nursing student during a medication calculation exam, I want to quickly insert clinical formulas with normal ranges, so that I can accurately calculate dosages and vital signs without memorizing formulas.
 
-### User: Free Tier Users
+**Acceptance Scenarios:**
 
-**As a Free Tier User, I want to:**
+- **Given I type "/formula" in the editor, when the command menu appears, then I see formulas for MAP, BMI, IV Drip Rates, Dosage Calculations, Glasgow Coma Scale, and Fluid Deficit**
+- **Given I select "MAP (Mean Arterial Pressure)", when it inserts, then I see the formula with normal range: "Normal 70-100 mmHg"**
+- **Given I select "BMI", when it inserts, then I see the calculation formula and "Normal 18.5-24.9" range**
+- **Given I need to calculate IV drip rates, when I select the drip rate formula, then I receive the complete calculation structure with unit conversions**
 
-- Use all features with 100 AI autocomplete requests/month to validate the tool before committing financially
-- Fall back to local dictionary-based autocomplete when my quota is exceeded so I'm never blocked from taking notes
-- Access to all slash commands (/template, /formula) without limits
+### User Story 4: Reliable Offline Note-Taking with Conflict Resolution
 
-### User: Pro Tier Users
+As a nursing student in a clinical rotation with spotty WiFi, I want my notes to auto-save locally and sync automatically when I'm back online with clear conflict resolution, so that I never lose critical patient case notes.
 
-**As a Pro Tier User, I want to:**
+**Acceptance Scenarios:**
 
-- Unlimited AI autocomplete without quota limits, especially during exam weeks when I'm using the tool most intensively
-- All slash commands and features without restrictions
+- **Given I'm editing a note offline, when 30 seconds pass, then the note auto-saves to local IndexedDB storage**
+- **Given I close my laptop during clinical without saving manually, when I reopen the app, then my latest changes are preserved**
+- **Given I regain internet connectivity after being offline, when the app detects connection, then all local changes sync to Firestore automatically**
+- **Given I edit the same note on my phone and laptop while offline, when both devices come online, then the system applies last-write-wins resolution (most recent timestamp wins) and preserves the overwritten version in version history**
+- **Given a sync conflict occurs, when the conflict is resolved, then I see a notification indicating which device's version was kept and can access the alternate version via version history**
 
-## 4. Critical Edge Cases
+### User Story 5: Tier-Based AI Access Management
 
-**Offline/Connectivity**
+As a free-tier nursing student, I want to use AI autocomplete for my most important notes, and fall back to dictionary autocomplete when I exceed my quota, so that I can evaluate the Pro tier before committing to a subscription.
 
-- User loses internet → Save to IndexedDB, sync when online
-- AI API fails/timeout → Fall back to local dictionary silently
-- Session expires during editing → Save locally, prompt re-auth, sync after login
+**Acceptance Scenarios:**
 
-**Quota Management**
+- **Given I'm on the free tier with 100 AI requests/month, when I use AI autocomplete, then I see my remaining quota in the UI**
+- **Given I reach my monthly AI limit, when I continue typing, then the app seamlessly switches to the 5,000+ term local dictionary without errors**
+- **Given I upgrade to Pro tier ($8.99/month), when I start typing, then I have unlimited AI autocomplete requests**
+- **Given I'm considering Pro, when I view the pricing page, then I see clear comparison: Free (100 AI/month) vs Pro (unlimited AI)**
 
-- Exceeds free tier quota mid-session → Seamless switch to dictionary fallback with notification
-- Pro user monitoring → Track for abuse patterns, alert if unusual usage
+### User Story 6: Account and Authentication
 
-**Data Integrity**
+As a nursing student, I want to create an account with my email and password, so that my notes sync across my devices and remain secure.
 
-- Multiple tabs with same note → Last write wins, warn "Note updated elsewhere"
-- Auto-save during active typing → Background save without cursor jump/lag
-- Closing browser/tab with unsaved changes → Auto-save prevents data loss (30s interval)
+**Acceptance Scenarios:**
 
-**Performance**
+- **Given I'm a new user, when I sign up with email and password, then my account is created and I'm logged in immediately**
+- **Given I'm a returning user, when I log in with my credentials, then I see my synced notes from all devices**
+- **Given I forget my password, when I use password reset, then I receive an email with reset instructions**
+- **Given I'm logged in, when my session expires, then I'm prompted to re-authenticate without losing local note data**
 
-- Notes with 20,000+ words → Editor remains responsive, consider lazy loading for very large notes
-- 1,000+ notes in library → Virtualize list, search <500ms
-- Slow network connection → Progressive enhancement, offline-first architecture handles gracefully
+### User Story 7: Cross-Platform PWA Access
 
-**AI Behavior**
+As a nursing student using multiple devices, I want to access NEXLY RN on my laptop, tablet, and phone through a PWA, so that I can take notes wherever I study.
 
-- AI autocomplete timeout → Fall back to dictionary after 2s
-- No autocomplete suggestions available → Fail silently, allow normal typing
-- Slash command conflicts → "/" character can still be typed normally if user continues typing without selecting command
+**Acceptance Scenarios:**
 
-## 5. Requirements
+- **Given I access NEXLY RN in my browser, when I install the PWA, then it appears as a standalone app icon on my device**
+- **Given I'm using the PWA on desktop, when I take notes, then the experience is identical to a native application**
+- **Given I'm on my phone during clinical, when I open the PWA, then I have full editor functionality with touch-optimized controls**
+- **Given I switch from tablet to laptop, when I open the app, then my notes are synced and accessible immediately**
 
-### 5.1 Functional Requirements
+### User Story 8: Note Organization and Management
 
-_Requirements are sorted by priority: P0 (Critical) → P1 (High) → P2 (Medium)_
+As a nursing student with multiple courses and clinical rotations, I want to organize my notes by category and quickly search for specific topics, so that I can find information when I need it.
 
-#### FR-001: AI Autocomplete [P0 - Critical]
+**Acceptance Scenarios:**
 
-_Purpose:_ Reduce typing load and catch missed terminology in real-time
+- **Given I create a new note, when I save it, then I can assign it to a category (e.g., Pharmacology, Med-Surg, Pediatrics, Clinical Rotation)**
+- **Given I have multiple notes, when I view my notes library, then I can filter by category and sort by date created or last modified**
+- **Given I need to find specific information, when I use the search function, then I see results matching note titles and content**
+- **Given I no longer need a note, when I delete it, then it moves to a trash folder where I can recover it within 30 days before permanent deletion**
+- **Given I accidentally delete a note, when I access the trash folder, then I can restore the note with all content intact**
 
-- Model: GPT-4.1 nano
-- Trigger after 150ms typing pause
-- Cursor context (200 chars)
-- Inline gray italicized suggestions
-- Keyboard controls:
-  - Tab: Accept suggestion
-  - Escape: Reject suggestion
-  - Right Arrow: Accept partial
-- Cancel in-flight requests on new typing
-- Log acceptance rate for monitoring
-- Active during all note editing
-- Performance target: <300ms (p95)
-- Quota tracking:
-  - **Free tier**: 100 requests/month → dictionary fallback with notification
-  - **Pro tier**: Unlimited
-  - Monthly reset
+### User Story 9: Note CRUD Operations
 
-#### FR-002: Note Editor [P0 - Critical]
+As a nursing student, I want to create, view, edit, and delete notes seamlessly, so that I can manage my study materials efficiently.
 
-_Purpose:_ Fast, focused note editing with minimal UI distractions
+**Acceptance Scenarios:**
 
-**Edit Mode** (single mode for all note-taking)
+- **Given I'm on the notes dashboard, when I click "New Note", then a new blank note opens in the editor with cursor ready for input**
+- **Given I have existing notes, when I click on a note title, then the note opens in the editor with full content displayed**
+- **Given I'm editing a note, when I make changes, then the changes auto-save every 30 seconds and I see a "Saved" indicator**
+- **Given I want to start fresh, when I create a new note, then I have the option to use a blank canvas or select a template via slash commands**
+- **Given I'm viewing my notes list, when I right-click or long-press a note, then I see options to rename, duplicate, export, or delete the note**
 
-- Clean, minimal UI optimized for speed
-- AI autocomplete active (GPT-4.1 nano)
-- Slash commands active (/template, /formula)
-- Auto-save every 30 seconds
-- Firestore auto-ID generation for new notes
-- Metadata tracking (timestamps, word count)
-- Title required before saving
-- Rich text formatting (bold, italic, headings, lists)
-- Preserve scroll position on save
-- No mode switching - simple, consistent experience
+## Requirements
 
-#### FR-003: Authentication [P0 - Critical]
+### Functional Requirements
 
-**MVP Scope:**
+#### Core Editor Features
 
-- Email/password authentication
-- Email verification required
-- Password reset functionality
-- Session management (24hr expiry, concurrent devices supported)
-- Account lockout after 5 failed attempts
-- Preserve unsaved work in IndexedDB during auth flows
+- **FR-001:** The editor must provide real-time AI-powered autocomplete suggestions for medical terminology as users type, with suggestions appearing within 200ms of keystroke input.
+- **FR-002:** The system must include a local 5,000+ term nursing dictionary (sourced from OpenMD Nursing Terminology Database under CC BY-SA 4.0 license) that activates automatically when AI quota is exceeded or offline mode is detected.
+- **FR-003:** Users must be able to trigger slash commands by typing "/" followed by command keywords (e.g., "/template", "/formula") to insert structured content.
+- **FR-004:** The "/template" command must provide pre-formatted options for: Care Plans, Medication Cards, SOAP Notes, Head-to-Toe Assessments, and Pathophysiology Outlines.
+- **FR-005:** The "/formula" command must insert clinical formulas with normal ranges including: MAP (70-100 mmHg), BMI (18.5-24.9), IV Drip Rates (gtt/min and mL/hr conversions), Dosage Calculations (mg/kg), Glasgow Coma Scale (3-15), and Fluid Deficit.
 
-**Deferred to Post-MVP:**
+#### Note Management (CRUD)
 
-- OAuth providers (Google, Microsoft)
+- **FR-006:** Users must be able to create new notes via "New Note" button, opening a blank editor with cursor positioned for immediate input.
+- **FR-007:** Users must be able to view all their notes in a notes library with list/grid view options showing note title, preview, category, and last modified date.
+- **FR-008:** Users must be able to edit existing notes by clicking on them from the notes library, opening the note in the editor with full content loaded.
+- **FR-009:** Users must be able to delete notes, which moves them to a trash folder where they can be recovered within 30 days before permanent deletion.
+- **FR-010:** Users must be able to rename notes via inline editing in the notes library or within the editor header.
+- **FR-011:** Users must be able to duplicate existing notes to create copies for reuse (e.g., duplicating a template-based care plan).
 
-**Note:** Email/password is sufficient for MVP; OAuth can be added to reduce friction in future iterations
+#### Note Organization
 
-#### FR-004: Note Management [P0 - Critical]
-
-- List view (no grid view in MVP)
-- Sort by: Last Edited, Created date, Title
-- Search by title (Dexie full-text search, <500ms for 1,000+ notes)
-- Delete with undo (5s window)
-- Export formats: Markdown, Plain Text with formatting + metadata
-- Click note → Opens in editor
-- "New Note" button → Opens blank editor
+- **FR-012:** Users must be able to assign categories to notes (Pharmacology, Med-Surg, Pediatrics, OB, Mental Health, Clinical Rotation, Other).
+- **FR-013:** Users must be able to filter notes by category and sort by date created, last modified, or alphabetically by title.
+- **FR-014:** Users must be able to search notes by title and content with real-time search results.
+- **FR-015:** Users must be able to access a trash folder to view deleted notes and restore or permanently delete them.
 
-#### FR-005: Slash Commands [P0 - Critical]
+#### Auto-Save and Sync
 
-_Purpose:_ Fast access to nursing-specific templates and formulas
+- **FR-016:** Notes must auto-save to local IndexedDB storage every 30 seconds without requiring manual user action, with visual "Saved" indicator.
+- **FR-017:** The system must sync local notes to Firebase Firestore automatically when internet connectivity is available.
+- **FR-018:** Offline editing must be fully functional with all core features (editor, slash commands, dictionary autocomplete, note CRUD) available without internet.
+- **FR-019:** The system must detect sync conflicts when the same note is edited on multiple devices while offline and resolve using last-write-wins algorithm (most recent timestamp wins).
+- **FR-020:** When sync conflicts occur, the system must preserve the overwritten version in version history and display a notification to the user indicating which version was kept.
+- **FR-021:** The system must maintain version history for each note, storing snapshots at each sync event to enable conflict recovery and historical review.
 
-**Slash Command System:**
+#### Authentication and Account Management
 
-- Trigger: Type "/" character in editor
-- Dropdown menu appears with available commands
-- Filter as user types (e.g., "/temp" shows template options)
-- Keyboard navigation (arrow keys + Enter) and click to select
-- Execute command → insert content at cursor position
-- Tiptap Suggestion extension for implementation
+- **FR-022:** Users must be able to create accounts using email/password authentication via Firebase Auth with minimum password requirements (8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character).
+- **FR-023:** Users must be able to log in with email/password credentials, with session persistence across browser sessions.
+- **FR-024:** Users must be able to reset forgotten passwords via email reset link sent through Firebase Auth.
+- **FR-025:** The system must enforce session timeout after 24 hours of inactivity, requiring re-authentication while preserving local note data.
+- **FR-026:** The system must support concurrent sessions (same user logged in on multiple devices) with proper sync conflict resolution.
 
-**/template Command:**
+#### Tier Management and Payment
 
-- **Purpose:** Insert structured note formats
-- **5 Templates for MVP:**
-  1. **Care Plan:** Nursing Diagnosis → Goals → Interventions → Evaluation
-  2. **Med Card:** Drug Name → Classification → Action → Dose → Side Effects → Nursing Considerations
-  3. **Assessment:** Head-to-toe assessment format
-  4. **SOAP Note:** Subjective → Objective → Assessment → Plan
-  5. **Pathophysiology:** Disease → Causes → S&S → Dx → Tx → Nursing Implications
-- Templates stored as JSON with placeholder fields
-- Instant insertion (<10ms)
-- Works offline (bundled with app)
+- **FR-027:** Free tier users must receive 100 AI autocomplete requests per month (one request = one suggestion batch per keystroke sequence) with visual quota tracking showing remaining requests.
+- **FR-028:** Pro tier users ($8.99/month or $79/year) must receive unlimited AI autocomplete requests.
+- **FR-029:** The system must track user tier status and enforce quota limits on AI requests based on subscription level, falling back to dictionary autocomplete when quota exceeded.
+- **FR-030:** The system must integrate with Stripe for payment processing, supporting both monthly ($8.99) and annual ($79) subscription billing.
+- **FR-031:** Users must be able to upgrade from Free to Pro tier via in-app payment flow and downgrade from Pro to Free tier with changes taking effect at next billing cycle.
+- **FR-032:** The system must display current subscription status, billing date, and payment method in user account settings.
 
-**/formula Command:**
+#### Export and Data Portability
 
-- **Purpose:** Insert medical calculation formulas
-- **6 Formulas for MVP:**
-  1. **MAP** (Mean Arterial Pressure): (SBP + 2×DBP) / 3 | Normal: 70-100 mmHg
-  2. **BMI** (Body Mass Index): Weight (kg) / Height (m)² | Normal: 18.5-24.9
-  3. **IV Drip Rate:** (Volume × Drop Factor) / Time (min)
-  4. **Dosage Calculation:** (Desired / Available) × Quantity
-  5. **GCS** (Glasgow Coma Scale): Eye (1-4) + Verbal (1-5) + Motor (1-6) = Total (3-15)
-  6. **Fluid Deficit:** Weight (kg) × % Dehydration × 1000 (mL)
-- Formulas include normal ranges and clinical context
-- Insert with editable placeholder fields
-- No calculations performed (user fills in values)
-- Works offline
+- **FR-033:** Users must be able to export individual notes to Markdown (.md) and Plain Text (.txt) formats via export menu.
+- **FR-034:** Users must be able to bulk export all notes as a ZIP archive containing Markdown files organized by category.
 
-**Performance Targets:**
+#### Progressive Web App (PWA)
 
-- Menu display: <50ms after "/" typed
-- Content insertion: <10ms
-- No AI calls required (pure client-side)
-- No quota limits (available to all users)
+- **FR-035:** The application must function as a PWA installable on desktop, tablet, and mobile devices with proper manifest configuration.
+- **FR-036:** The PWA must include service workers enabling offline functionality and cache management.
+- **FR-037:** The PWA must display custom app icon, splash screen, and app name when installed on user devices.
 
-#### FR-006: Auto-Save [P0 - Critical]
+### Non-Functional Requirements
 
-_Purpose:_ Never lose work
+- **Performance Requirements:**
 
-**MVP Scope:**
+  - AI autocomplete suggestions must appear within 200ms of keystroke input
+  - Auto-save operations must complete within 500ms without blocking the editor
+  - Initial page load must complete within 2 seconds on 3G connection with LCP (Largest Contentful Paint) < 2.5s
+  - Editor must handle notes up to 50,000 characters without performance degradation (note: typical note length is 1,000-5,000 characters; 50,000 is edge case)
+  - Client-side memory usage must remain under 150MB for typical usage (10-20 notes loaded in memory)
+  - Search operations must return results within 300ms for libraries up to 1,000 notes
 
-- Auto-saves content every 30 seconds during editing
-- IndexedDB-first → Firestore sync
-- Exponential backoff retry (1s, 2s, 4s, 8s max)
-- Save indicators:
-  - "Saving..." during save
-  - "Saved" for 2s after success
-  - "Offline - Saved locally" when no connection
-- Conflict resolution: **Last write wins** with "Note updated elsewhere" warning
-- No version history/snapshots in MVP (simple autosave only)
+- **Scalability Requirements:**
 
-**Deferred to Post-MVP:**
+  - Support 1,000+ concurrent active users on MVP infrastructure
+  - Handle 10,000+ AI autocomplete requests per day
+  - Scale to 10,000+ total users within 6 months post-launch
+  - Firestore must accommodate 100,000+ note documents efficiently
+  - API endpoints must support rate limiting of 60 requests per minute per user (excluding AI requests which have quota limits)
 
-- Version snapshots and history
-- Complex conflict resolution UI (Keep Local/Use Remote/View Diff options)
-- Restore from previous versions
+- **Security Requirements:**
 
-#### FR-007: Dictionary Fallback [P1 - High]
+  - All user authentication must use Firebase Auth with encrypted password storage
+  - Passwords must meet minimum requirements: 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+  - API endpoints must validate user tier and quota before processing AI requests
+  - User notes must be stored with proper Firestore security rules (users can only access their own notes)
+  - HTTPS must be enforced for all client-server communication
+  - Environment variables containing API keys must never be exposed to client-side code
+  - Stripe webhook signatures must be validated to prevent payment fraud
+  - Session tokens must be securely stored in httpOnly cookies with 24-hour expiration
 
-- 5,000+ nursing terms database
-- Load on initialization
-- Prefix match (case-insensitive)
-- Ranked by relevance
-- Response time: <50ms (p95)
-- Activates when AI quota exceeded or offline
-- Seamless transition (no UI disruption)
-- Silent fallback with notification
+- **Accessibility Requirements:**
 
-#### FR-008: Offline/PWA Support [P1 - High]
+  - Editor must be keyboard-navigable with logical tab order
+  - ARIA labels must be present on all interactive elements
+  - Minimum contrast ratio of 4.5:1 for text elements (WCAG AA compliance)
+  - Slash command menu must be accessible via screen readers with proper ARIA announcements
+  - Support for browser zoom up to 200% without layout breaking
+  - Focus indicators must be visible on all interactive elements
 
-- IndexedDB for offline access
-- Create/edit/read offline (local saves only)
-- Disable AI when offline with clear indicator
-- Sync on reconnect
-- Background Sync API for retry
-- Service Worker caching (CSS/JS/fonts/icons)
-- Installable (prompt after 2 visits or 5min use)
-- Icons (192x192, 512x512)
-- Notify on sync complete
-- 3G support (1 Mbps minimum)
-- Offline-first architecture with background sync
+- **Compatibility Requirements:**
 
-#### FR-009: Onboarding [P2 - Medium]
+  - Support latest versions of Chrome, Firefox, Safari, and Edge browsers (last 2 major versions)
+  - PWA must install and function on Windows, macOS, Linux, iOS, and Android
+  - Responsive design supporting screen sizes from 320px (mobile) to 2560px (desktop)
+  - Offline functionality must work across all supported browsers with service worker support
 
-_Purpose:_ Help students get started quickly
+- **Reliability Requirements:**
 
-**MVP Scope:**
+  - 99%+ sync success rate for online operations
+  - Zero data loss during offline-to-online transitions
+  - Auto-save must have 99.9%+ success rate
+  - System uptime of 99.5% (excluding planned maintenance windows of max 2 hours/month)
 
-- Simple welcome screen on first login
-- Brief explanation of key features (AI autocomplete, slash commands, autosave)
-- Quick demo of /template and /formula commands
-- Skippable
-- Mark complete in user profile
+- **Monitoring and Observability Requirements:**
+  - System must log all authentication events (login, logout, password reset) for security auditing
+  - System must track AI API costs per user tier to monitor budget adherence
+  - System must monitor sync conflict frequency and resolution success rate
+  - System must track error rates for critical operations (save, sync, payment processing)
+  - System must provide real-time alerts when error rates exceed 5% or infrastructure costs exceed $75/month
 
-**Deferred to Post-MVP:**
-
-- Interactive tutorial flow
-- Sample note creation demo
-- "Try it now" interactive demo
-- "Restart Onboarding" option in Settings
-
-**Note:** Focus on getting users into the product quickly; comprehensive onboarding can be added based on user feedback post-launch
-
-#### FR-010: Settings [P2 - Medium]
-
-**MVP Scope:**
-
-**Display Settings**
-
-- Light/dark theme toggle
-- Auto-detect system preference
-- Display current tier (Free/Pro)
-
-**Deferred to Post-MVP:**
-
-**Account Settings**
-
-- Update email with verification
-- Change password
-- Delete account with confirmation + 30-day grace period
-
-**Editor Settings**
-
-- Font size adjustment (12-20px)
-- Toggle autocomplete on/off
-- Adjust auto-save interval (15-60s)
-
-**Note:** MVP focuses on essential settings; additional preferences can be added based on user requests post-launch
-
-### 5.2 Non-Functional Requirements
-
-_Requirements are sorted by priority: P0 (Critical) → P1 (High) → P2 (Medium)_
-
-**NFR-001: Performance [P0 - Critical]**
-
-- AI Autocomplete <300ms (p95) - _Note: Accounts for OpenAI API base latency (200-500ms); local dictionary fallback <50ms_
-- Dictionary Fallback <50ms (p95)
-- Slash Command Menu Display <50ms (p95)
-- Slash Command Content Insertion <10ms (p95)
-- Search <500ms for 1k+ notes (p95)
-- Editor Load <1s for 20k word note (p95)
-- Auto-save <200ms (p95)
-- Core Web Vitals: FCP <1.5s, LCP <2.5s, TTI <3.5s, CLS <0.1 (p75)
-- Scale: 10k concurrent users, 100k+ registered users
-- Max limits: 50k words/note, 10k notes/user, 1k API req/s
-
-**NFR-002: Reliability [P0 - Critical]**
-
-- 99.5% uptime
-- Planned maintenance <4hrs/month (2-6 AM EST)
-- 11-nines data durability (Firestore)
-- Redundant backups across regions
-- 30-day soft-delete
-- Centralized error logging (Sentry)
-- User-friendly errors (no stack traces)
-- Graceful degradation
-- Exponential backoff retry
-- <0.1% error rate
-
-**NFR-003: Security [P0 - Critical]**
-
-- Strong passwords (min 8 chars, 1 uppercase, 1 number, 1 special)
-- Bcrypt hashing (≥12 salt rounds)
-- Rate limiting (5 attempts/15min)
-- JWT (24hr expiry)
-- HTTPS-only (TLS 1.3)
-- Encrypt in-transit & at-rest (AES-256)
-- Firestore row-level security
-- Input sanitization (XSS/CSRF protection)
-- API keys in env vars
-- Rotate OpenAI keys every 90 days
-- Validate all inputs
-
-**NFR-004: Privacy [P0 - Critical]**
-
-- NO AI training on user notes
-- NO third-party sharing (except OpenAI/Firebase)
-- GDPR/CCPA compliant (data export/deletion)
-- Anonymized analytics (no PII)
-- Educational disclaimer ("not medical advice")
-- NO PHI storage
-
-**NFR-005: Usability [P1 - High]**
-
-- Responsive (320px-4K)
-- Keyboard navigation
-- Visual feedback <100ms
-- Consistent design patterns
-- Loading indicators >500ms
-- WCAG 2.1 Level AA
-- Screen reader support (NVDA/JAWS/VoiceOver)
-- Keyboard shortcuts
-- 4.5:1 contrast ratio
-- Alt text for images
-- Browser zoom 200%
-- Onboarding <2min
-- First note <30s post-onboarding
-- Contextual tooltips
-- Actionable error messages
-
-**NFR-006: Maintainability [P1 - High]**
-
-- TypeScript strict mode
-- **>60% test coverage for MVP** (focus on critical paths: auth, save/sync, AI calls)
-  - _Post-MVP target: 80% coverage_
-- ESLint style guide
-- JSDoc for public functions
-- SemVer
-- Centralized logging
-- Track perf metrics
-- Health check endpoints
-- Real-time status dashboard
-- CI/CD pipeline
-- Automated rollback
-- Dev/staging/prod environments
-
-**Note:** MVP prioritizes testing critical user flows over comprehensive coverage; expand test suite post-launch based on usage patterns
-
-**NFR-007: Compatibility [P1 - High]**
-
-- Latest 2 versions (Chrome, Firefox, Safari, Edge)
-- Mobile browsers (Safari iOS 14+, Chrome Android 10+)
-- All platforms (desktop/tablet/mobile)
-- PWA installable
-- 3G support (1 Mbps)
-- Offline-first with background sync
-
-**NFR-008: Cost Efficiency [P2 - Medium]**
-
-- Optimize Firestore reads/writes
-- Caching
-- IndexedDB for local storage
-- Request batching
-- GPT-4.1 nano for autocomplete
-- Debouncing
-- Dictionary fallback
-- API cost monitoring/alerts
-
-## 6. Technical Stack (Next.js)
-
-### Frontend
-
-- **Next.js 15.1** with App Router
-- **React 19.1** with concurrent features
-- **TypeScript 5.9.3** with strict mode
-- **Tiptap 3.4** editor with extensions:
-  - `@tiptap/suggestion` for slash commands
-  - Core extensions (heading, bold, italic, lists)
-  - Custom extensions for nursing-specific features
-- **Shadcn UI** components (built on Radix UI)
-- **Tailwind CSS 4.1** for styling
-- **next-themes** for dark mode
-- **Zustand 5.0.8** for client state management
-- **Dexie 4.2.0** for offline IndexedDB storage
-
-### Backend
+## Technical Stack
 
-- **Next.js API Routes** (serverless functions)
-- **Firebase Authentication** (Client SDK + Admin SDK)
-- **Firestore** (direct access from client + Admin SDK in API routes)
-- **Firebase Admin SDK** for server-side operations
-- **OpenAI API** (via Next.js API routes)
+- **Frontend Framework:** Next.js 14+ (App Router) with React 19
+- **Language:** TypeScript
+- **Editor:** Tiptap (ProseMirror-based rich text editor)
+- **Styling:** Tailwind CSS v4 with Shadcn UI components
+- **Authentication:** Firebase Auth (email/password)
+- **Backend/Database:** Firebase Firestore (cloud sync)
+- **Local Storage:** Dexie.js (IndexedDB wrapper for offline data)
+- **AI Integration:** OpenAI GPT-4.1 nano API (medical autocomplete)
+- **Payment Processing:** Stripe (subscription billing and checkout)
+- **Deployment:** Vercel (Next.js hosting with serverless API routes)
+- **PWA:** Next.js PWA plugin with service workers
+- **Analytics:** Vercel Analytics (user behavior tracking)
+- **Error Tracking:** Sentry (error monitoring and reporting)
+- **Monitoring:** Vercel Monitoring + custom dashboard for cost tracking
+- **Testing:** Vitest 3.2.4 (unit/integration tests) + Playwright 1.55.0 (E2E tests)
 
-### AI
+## Dependencies and Assumptions
 
-- **GPT-4.1 nano** for autocomplete during note editing
-- Custom 5,000+ nursing terms DB for autocomplete fallback (offline + quota exceeded scenarios)
+**Dependencies:**
 
-### Deployment
+- Firebase project configured with Firestore and Authentication enabled
+- OpenAI API access with GPT-3.5-turbo for autocomplete functionality
+- Stripe account for payment processing with webhook endpoints configured
+- Vercel account for deployment and serverless function hosting
+- Domain name and SSL certificate for production deployment
+- 5,000+ term nursing dictionary dataset (JSON format) sourced from OpenMD Nursing Terminology Database under CC BY-SA 4.0 license for offline autocomplete
+- Email service for password reset functionality (Firebase Auth handles this)
+- Sentry account for error tracking and monitoring
+- Vercel Analytics enabled for user behavior tracking
 
-- **Vercel** (recommended) or Firebase Hosting
-- **PWA** (installable on desktop and mobile via next-pwa)
-- **Progressive Web App** features:
-  - Installable on all platforms
-  - Offline support with Service Worker
-  - Background sync for notes
-  - No app store required
+**Assumptions:**
 
-### Testing
+- Target users have modern browsers (released within last 2 years) with service worker support
+- Students have intermittent internet access but not constant connectivity
+- Average note length is 1,000-5,000 characters (edge cases up to 50,000 characters supported)
+- Users will primarily access the app on laptops/tablets during study sessions
+- Free tier users will average 50 AI requests/month (under 100 quota)
+- 5% conversion rate from free to Pro tier is achievable with clear value demonstration
+- Infrastructure costs will remain under $85/month for 1,000 active users (breakdown: Vercel $20, Firebase $35, OpenAI $25, monitoring $5)
+- Nursing terminology remains relatively stable (dictionary updates quarterly)
+- Students prefer speed and simplicity over complex formatting features
+- Users will primarily edit notes individually (no real-time collaborative editing required for MVP)
+- OpenMD Nursing Terminology Database will remain available under CC BY-SA 4.0 license for commercial use
 
-- **Vitest 3.2.4** for unit tests
-- **React Testing Library 16.3.0** for component tests
-- **Playwright 1.55.0** for E2E tests
-- **Firebase Emulator Suite** for backend testing
+## Risks and Mitigation
 
-## 7. Architecture Decisions
+### Risk 1: Low Slash Command Adoption
 
-### 7.1 Offline-First Architecture
+**Overview:** Students may not discover or use slash commands (/template, /formula) due to lack of awareness or discoverability, resulting in the app not delivering its core value proposition of speed.
 
-**Strategy:** IndexedDB-first with background Firestore sync
+**Mitigation Strategy:**
 
-**Data Flow:**
+- Implement onboarding tour highlighting slash commands with interactive demo on first login
+- Display in-editor tooltips showing "/" trigger when user pauses typing
+- Track slash command usage metrics from day 1 to identify adoption gaps
+- Add persistent UI hint near editor showing available commands until user has used them 5+ times
+- Include keyboard shortcut cheatsheet accessible via "?" key
 
-```
-User Action (Create/Edit/Delete)
-    ↓
-Save to IndexedDB immediately (<10ms)
-    ↓
-Update UI with "Saving..." indicator
-    ↓
-Background sync to Firestore (with retry)
-    ↓
-Exponential backoff on failure (1s, 2s, 4s, 8s max)
-    ↓
-Update UI: "Saved" or "Offline - Saved locally"
-```
-
-**Conflict Resolution (MVP):**
-
-- **Strategy:** Last write wins with timestamp comparison
-- **Detection:** Compare `lastModified` timestamp on sync
-- **Warning:** Show "Note updated elsewhere" notification
-- **User Action:** Simple acknowledgment (complex merge deferred to post-MVP)
-
-**Deferred to Post-MVP:**
-
-- Three-way merge algorithm
-- Manual conflict resolution UI (Keep Local/Use Remote/View Diff)
-- Optimistic UI updates with rollback
-
-**Implementation Libraries:**
-
-- Dexie.js for IndexedDB abstraction
-- Firebase SDK for Firestore sync
-- Background Sync API for retry logic
-
----
-
-### 7.2 AI Optimization Strategies
-
-**Challenge:** Reduce AI autocomplete latency from 200-500ms to <300ms (p95)
-
-**Optimizations:**
-
-1. **Response Caching**
-
-   ```typescript
-   // Cache common completions by context hash
-   const cache = new LRU<string, string>(maxSize: 1000);
-
-   if (cache.has(contextHash)) {
-     return cache.get(contextHash); // <10ms
-   }
-
-   const result = await openai.complete(context);
-   cache.set(contextHash, result);
-   ```
-
-2. **Request Cancellation**
-
-   - Cancel in-flight requests when user continues typing
-   - Prevents stale suggestions from appearing
-   - Use AbortController API
-
-3. **Prefetching Strategy**
-
-   - Send request on 150ms typing pause
-   - Cache result before user hits Tab
-   - If user accepts, suggestion appears instantly
-
-4. **Dictionary Fallback**
-
-   - Trigger immediately if API fails or quota exceeded
-   - Prefix match on 5,000+ nursing terms
-   - <50ms response time
-   - Seamless transition (no UI disruption)
-
-5. **Debouncing**
-   - 150ms pause before sending request
-   - Balances responsiveness with API cost
-
-**Cost Control:**
-
-- Free tier: 100 requests/month → dictionary fallback with notification
-- Pro tier: Unlimited but monitor for abuse
-- Track per-user request counts in Firestore
-
----
-
-### 7.3 Slash Commands Architecture
+### Risk 2: AI API Costs Exceed Revenue
 
-**Strategy:** Client-side command system using Tiptap Suggestion extension
-
-**Implementation Pattern:**
+**Overview:** If AI autocomplete usage significantly exceeds projections (especially if free tier users abuse the 100 request quota), OpenAI API costs could exceed Pro tier revenue, making the business model unsustainable.
 
-```typescript
-// Slash command configuration
-const slashCommands = {
-  templates: [
-    { id: "care-plan", name: "Care Plan", content: "..." },
-    { id: "med-card", name: "Med Card", content: "..." },
-    // ... more templates
-  ],
-  formulas: [
-    { id: "map", name: "MAP", formula: "...", content: "..." },
-    { id: "bmi", name: "BMI", formula: "...", content: "..." },
-    // ... more formulas
-  ],
-};
+**Mitigation Strategy:**
 
-// Tiptap Suggestion configuration
-const SlashCommandsExtension = Extension.create({
-  name: "slashCommands",
-  addOptions() {
-    return {
-      suggestion: {
-        char: "/",
-        items: ({ query }) => filterCommands(query),
-        render: () => renderCommandMenu(),
-        command: ({ editor, range, props }) => {
-          insertCommandContent(editor, range, props);
-        },
-      },
-    };
-  },
-});
-```
+- Implement strict request-based quota enforcement at API route level
+- Monitor AI API costs weekly and set alerts at $50, $75, $100 thresholds
+- Use GPT-3.5-turbo instead of GPT-4 to reduce per-request costs by 90%
+- Implement request throttling (max 1 AI request per 3 seconds per user)
+- Fall back to local dictionary automatically when quota exceeded to control costs
+- Consider reducing free tier quota from 100 to 50 requests/month if costs remain high
 
-**Data Storage:**
+### Risk 3: Generic Note Apps Add Nursing Features
 
-- Templates and formulas stored in JSON files
-- Bundled with application (no API calls)
-- ~50KB total for all templates + formulas
-- Works 100% offline
+**Overview:** Competitors like Notion or Google Docs could add medical terminology autocomplete or template libraries, reducing NEXLY RN's differentiation and market position.
 
-**Performance:**
+**Mitigation Strategy:**
 
-- Menu display: <50ms after "/" typed
-- Filtering as user types: <10ms
-- Content insertion: <10ms
-- No quota limits (client-side only)
+- Move fast and ship MVP within 4-6 weeks to establish market presence early
+- Build strong nursing student community through Reddit, nursing school partnerships, and social media
+- Focus on nursing-specific depth (specialty templates, NCLEX integration) that generalist tools won't prioritize
+- Develop unique IP in clinical formula library and nursing-optimized UX
+- Gather direct user feedback weekly to iterate faster than large competitors
 
-**User Experience:**
+### Risk 4: Sync Conflicts Cause Data Loss
 
-- Type "/" → dropdown appears
-- Type to filter (e.g., "/temp" → shows templates)
-- Arrow keys to navigate, Enter to select
-- Escape to cancel
-- Click to select
+**Overview:** When users edit the same note on multiple devices while offline, the conflict resolution algorithm could fail and cause permanent data loss, destroying user trust in reliability.
 
-**Benefits:**
+**Mitigation Strategy:**
 
-- No AI calls required (cost-free)
-- Works offline
-- Instant insertion
-- Nursing-specific value
+- Implement last-write-wins conflict resolution with full version history preservation
+- Store conflicting versions in separate Firestore documents for manual user review
+- Display clear conflict notification UI when sync conflicts are detected
+- Auto-backup all notes to Firestore every 5 minutes when online (not just on manual save)
+- Implement comprehensive sync testing with automated offline/online scenario tests
+- Add manual sync trigger button for users to control sync timing
 
----
+### Risk 5: Student Churn During Summer/Graduation
 
-### 7.4 PWA & Service Worker Strategy
+**Overview:** Nursing students graduate or take summer breaks, causing high seasonal churn and revenue volatility, especially for monthly subscribers.
 
-**Goals:**
+**Mitigation Strategy:**
 
-- Installable on desktop and mobile
-- Offline access to notes
-- Background sync when reconnected
+- Offer annual pricing ($79/year vs $107.88 monthly) with 27% discount to lock in year-long commitment
+- Build NCLEX prep features (practice questions, spaced repetition) to retain graduating students preparing for licensure exam
+- Launch "Summer Study Mode" with discounted rates to retain users during break periods
+- Create alumni discount tier for graduated nurses to maintain long-term relationship
+- Develop referral program incentivizing current students to recruit incoming cohorts
 
-**Implementation:**
+### Risk 6: PWA Installation and Discoverability
 
-- **next-pwa** for Service Worker generation
-- **workbox** for caching strategies
-- **Background Sync API** for retry logic
+**Overview:** Users may not understand how to install the PWA or may prefer waiting for native mobile apps, reducing cross-platform adoption and mobile usage.
 
-**Caching Strategy:**
+**Mitigation Strategy:**
 
-```
-Static Assets (CSS/JS/fonts): Cache-first
-API Routes: Network-first with fallback
-Notes Data: IndexedDB (not Service Worker cache)
-```
+- Display clear PWA installation prompts with screenshots showing the "Add to Home Screen" process
+- Create video tutorials for PWA installation on iOS, Android, Windows, and macOS
+- Ensure PWA manifest is properly configured with app icons, splash screens, and offline support
+- Track PWA installation rate and optimize prompts if below 30% installation rate
+- Communicate "works like a native app" messaging clearly in marketing
 
-**Offline Behavior:**
+### Risk 7: OpenAI API Unavailability or Rate Limiting
 
-- Read/write notes from IndexedDB
-- Disable AI features (show "Offline" indicator)
-- Queue sync requests for when online
-- Notify user when sync completes
+**Overview:** If OpenAI experiences service outages or implements stricter rate limiting, AI autocomplete could become unavailable, degrading the core user experience and value proposition.
 
-**Testing:**
+**Mitigation Strategy:**
 
-- Test on real devices (Safari iOS, Chrome Android)
-- Verify storage quota limits (varies by browser)
-- Test offline → online transitions
+- Implement automatic fallback to local 5,000+ term nursing dictionary when AI API fails or times out
+- Cache recent AI autocomplete responses locally (per session) to reduce API dependency
+- Display clear user messaging when AI is unavailable: "Using offline dictionary mode"
+- Monitor OpenAI API status page and set up alerts for service degradation
+- Consider backup AI provider (Anthropic Claude, Google Gemini) for future redundancy
+- Design UX so dictionary fallback feels seamless, not like a degraded experience
 
----
+### Risk 8: Firebase Service Outages Affecting Core Functionality
 
-## 8. Privacy & Compliance
+**Overview:** Firebase Firestore or Authentication outages could prevent users from logging in, syncing notes, or accessing their data, causing frustration and potential data loss anxiety.
 
-**Important:** Legal review required before claiming regulatory compliance
+**Mitigation Strategy:**
 
-### Data Privacy Principles
+- Ensure full offline-first architecture where all core editing features work without Firebase connection
+- Display clear status messaging when Firebase is unreachable: "Working offline - will sync when connection restored"
+- Implement exponential backoff retry logic for failed sync operations (retry after 5s, 15s, 30s, 60s)
+- Monitor Firebase status dashboard and communicate proactively to users during known outages
+- Maintain local IndexedDB as source of truth, with Firebase as sync layer (not primary storage)
+- Test app behavior during simulated Firebase outages in QA
 
-- **NO AI training on user notes** - User content is never used to train OpenAI models (verify API agreement)
-- **NO third-party data sharing** - Data shared only with essential providers (OpenAI, Firebase/Google Cloud)
-- **NO Protected Health Information (PHI)** - System is for educational purposes only, not for patient care documentation
-- **Educational Use Disclaimer** - Notes and AI suggestions are "not medical advice" and for educational purposes only
+### Risk 9: Medical Terminology Accuracy (AI Hallucinations)
 
-### Regulatory Compliance Requirements
+**Overview:** OpenAI's GPT models could hallucinate incorrect medical terminology or suggest inappropriate terms, potentially leading students to document incorrect information in their notes.
 
-**GDPR Compliance (EU users):**
+**Mitigation Strategy:**
 
-- Right to access: Data export endpoints required
-- Right to erasure: Data deletion endpoints required
-- Right to portability: Export in machine-readable format (JSON)
-- Consent management: Clear opt-in for AI features
-- Data retention policies: Define limits for version snapshots
+- Validate all AI suggestions against the 5,000+ term nursing dictionary before displaying to users (only show suggestions that match known valid terms)
+- Display clear disclaimer in onboarding: "AI suggestions are tools for speed, not medical advice - always verify terminology"
+- Implement user feedback mechanism to report incorrect suggestions (thumbs up/down on autocomplete)
+- Monitor flagged suggestions weekly and add to blocklist if patterns of incorrect terms emerge
+- Prioritize local dictionary over AI when confidence scores are low
+- Consider hybrid approach: AI generates candidates, dictionary validates before showing to user
 
-**CCPA Compliance (California users):**
+## Success Criteria
 
-- Right to know: Disclose what data is collected
-- Right to delete: Data deletion on request
-- Right to opt-out: Disable AI features if requested
-- Non-discrimination: Same service quality for opt-out users
+**MVP Validation (2 weeks, 50 beta users)**
 
-**Required Implementation (MVP):**
+- **SC-001:** 60%+ of beta users actively use slash commands (/template or /formula) within their first week, measured as (users who executed ≥1 slash command in first 7 days / total users who completed onboarding)
+- **SC-002:** 40%+ AI autocomplete acceptance rate, calculated as (total accepted AI suggestions / total AI suggestions shown) across all user sessions during beta period
+- **SC-003:** 99%+ sync reliability with zero reported data loss incidents during beta period, measured as (successful sync operations / total sync attempts)
+- **SC-004:** Average user feedback score of 4+/5 on "faster than current note-taking method" metric from exit survey
+- **SC-005:** 80%+ of users report successful offline editing without issues in exit survey
 
-- Data export endpoint: `/api/users/export` (returns JSON with all user notes + metadata)
-- Data deletion endpoint: `/api/users/delete-account` (soft-delete with 30-day grace period)
-- Privacy policy page (template to be reviewed by legal)
-- Terms of service (template to be reviewed by legal)
-- Cookie consent banner (for analytics)
+**Launch Success (3 months post-launch)**
 
-**Deferred to Post-MVP:**
+- **SC-006:** 1,000+ active users, defined as users creating or editing at least one note per week, tracked via analytics
+- **SC-007:** 5% conversion rate from free to Pro tier (50+ paying subscribers), calculated as (Pro subscribers / total registered users)
+- **SC-008:** Infrastructure costs remain under $85/month while supporting user base, tracked via monthly spend dashboard
+- **SC-009:** Net revenue of $364.50+/month, calculated as (50 Pro users × $8.99 = $449.50 revenue) - $85 infrastructure costs = $364.50 net
+- **SC-010:** 70%+ user retention rate after first month, measured as (users active in month 2 / users who signed up in month 1)
 
-- GDPR Data Protection Impact Assessment (DPIA)
-- CCPA compliance verification audit
-- SOC 2 Type II certification (for enterprise customers)
+**Product-Market Fit Validation**
 
-**Disclaimer:** This product is NOT subject to HIPAA or FERPA regulations as it is not used for patient care or institutional educational records. System is for personal study use only.
-
----
-
-## 9. Monetization Strategy
-
-**Important!** We are adopting a **freemium SaaS model** with a **request-based cap** for autocomplete to avoid heavy token-tracking complexity while still controlling costs
-
-### Free Tier (Baseline Adoption — $0/month)
-
-- Unlimited note-taking
-- **AI Autocompletion:** up to 100 requests/month
-- After limit: fallback to dictionary-based autocomplete (5,000+ nursing terms DB, no API cost)
-- **Slash Commands:** Unlimited access to /template and /formula commands
-- Autosave and offline sync
-- Local note storage + export (Markdown, Plain Text)
-- PWA installation
-- Search and organize notes
-
-### Pro Tier (Core Value Unlock — $8.99/month or $79/year)
-
-- Everything in Free, plus:
-- **Unlimited AI Autocompletion**
-- All slash commands (unlimited)
-- Priority support + feature voting
-- Early access to new features
-
-### Rationale
-
-- **Free Tier:** Showcases core product value while capping costs via request limits
-- **Pro Tier:** Removes caps, adds study accelerators, ensures heavy users upgrade
-
-### Cost & Revenue Projections
-
-**Infrastructure Costs (Monthly, assuming 1,000 active users):**
-
-| Service                  | Usage                      | Estimated Cost |
-| ------------------------ | -------------------------- | -------------- |
-| Vercel Hosting           | Pro plan                   | $20/mo         |
-| Firebase Firestore       | ~500k reads, 200k writes   | $15/mo         |
-| Firebase Auth            | Included in free tier      | $0             |
-| OpenAI API               | (see breakdown below)      | $40-50/mo      |
-| Sentry (Error Tracking)  | Free tier adequate for MVP | $0             |
-| **Total Infrastructure** |                            | **$75-85/mo**  |
-
-**OpenAI API Costs (GPT-4o mini pricing):**
-
-- Autocomplete: ~100 tokens per request × $0.15/1M tokens
-- Key Term Spotting: ~3,000 tokens per request × $0.60/1M tokens
-- Estimated: $40-50/mo for 1,000 users with quota limits
-
-**Realistic Conversion Assumptions:**
-
-- Industry standard for freemium SaaS: **2-5% conversion**
-- Student demographic: price-sensitive, higher churn
-- **Conservative estimate: 5-10% free-to-paid conversion**
-- **Optimistic estimate: 15-20% conversion** (requires strong product-market fit)
-
-**Break-Even Analysis:**
-
-- Monthly costs: ~$85
-- Revenue per Pro user: $8.99/mo
-- **Break-even: ~10 paying users (1% of 1,000 users)**
-- This is highly achievable
-
-**Revenue Scenario (1,000 active users, 5% conversion):**
-
-- 50 Pro users × $8.99 = $449.50/mo
-- Costs: $85/mo
-- **Net: $364.50/mo profit margin**
-
-**Churn Risk Factors:**
-
-- Seasonal usage (summer breaks, graduation after 2-4 years)
-- Student budget constraints
-- **Mitigation:** Annual pricing incentive ($79 vs $107.88), student success stories, NCLEX prep tie-ins
-
-## 10. Success Metrics
-
-### MVP Validation Metrics (2 weeks after beta launch)
-
-**Core Workflow Metrics**
-
-- **Note-Taking Speed:** Avg time from note creation to first save
-  - **Green light**: Users report "faster than [current method]"
-  - **Yellow light**: Mixed feedback
-  - **Red light**: "Too slow" or "No different"
-- **Slash Command Adoption:** % of users using /template or /formula at least once in week 1
-  - **Green light**: ≥60%
-  - **Yellow light**: 40-59%
-  - **Red light**: <40% (users don't discover feature)
-- **Slash Command Frequency:** Avg slash command uses per active user per week
-  - **Green light**: ≥5 uses/week
-  - **Yellow light**: 2-4 uses/week
-  - **Red light**: <2 uses/week (low engagement)
-- **Autocomplete Acceptance:** % of AI suggestions accepted
-  - **Green light**: ≥40%
-  - **Yellow light**: 25-39%
-  - **Red light**: <25% (accuracy too low)
-- **Offline Reliability:** % of notes successfully synced after offline editing
-  - **Green light**: ≥99%
-  - **Yellow light**: 95-98%
-  - **Red light**: <95% (data loss issues)
-- **Onboarding Completion:** % of users completing welcome screen
-  - **Green light**: ≥80%
-  - **Yellow light**: 60-79%
-  - **Red light**: <60%
-
-### Decision Matrix
-
-**Green Light (Keep Building)**
-
-- ≥60% use slash commands in week 1
-- Users report "faster than [current method]"
-- ≥40% autocomplete acceptance
-- No major sync/data loss issues
-
-**Yellow Light (Iterate)**
-
-- Slash commands discovered but not used frequently
-- Autocomplete accuracy needs improvement
-- Users confused about when to use features
-
-**Red Light (Pivot)**
-
-- Users don't discover slash commands
-- "Why not just use Google Docs?"
-- High churn, low engagement
-- Data loss or sync issues
-
-### Lagging Metrics (Track but don't optimize for in MVP)
-
-- DAU
-- Retention
-- Free-to-paid conversion
-- Churn
-
-## 11. Challenges & Risks
-
-### 11.1 Technical Risks
-
-#### **Critical Risks (High Impact, High Probability)**
-
-| Risk                               | Impact                                                | Probability  | Mitigation Strategy                                                                                    | Status      |
-| ---------------------------------- | ----------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ | ----------- |
-| **React 19 Library Compatibility** | High - Core dependencies may not support React 19 yet | Medium (40%) | Budget time for dependency debugging, maintain fallback to React 18.x if critical library incompatible | Monitor     |
-| **AI API Rate Limits**             | High - Could block users during peak usage            | Medium (50%) | Request OpenAI limit increase 2 weeks pre-launch, implement graceful fallback to dictionary            | Mitigate    |
-| **Offline Sync Complexity**        | High - Data loss or corruption                        | High (60%)   | Simplify to "last write wins", defer complex conflict resolution, extensive testing                    | In Progress |
-| **Browser IndexedDB Quota Limits** | Medium - Users run out of storage                     | Medium (40%) | Monitor storage usage, implement cleanup for old versions, warn at 80% quota                           | Design      |
-
-#### **High Risks (Monitor Closely)**
-
-| Risk                                | Impact                                                      | Probability  | Mitigation Strategy                                                                                     | Status  |
-| ----------------------------------- | ----------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------- | ------- |
-| **Medical Terminology Accuracy**    | Critical - Incorrect medical terms could mislead students   | Medium (30%) | Validate AI suggestions against medical dictionary, user feedback loop, disclaimer "not medical advice" | Design  |
-| **Slash Command Template Accuracy** | Medium - Incorrect nursing templates could mislead students | Low (15%)    | Review templates with nursing faculty, validate against textbooks, user feedback                        | Design  |
-| **Firebase Firestore Write Costs**  | Medium - Unexpected cost spike                              | Low (20%)    | Implement aggressive caching, batch writes, monitor costs weekly, alerts at $100/mo                     | Monitor |
-| **PWA Installation Friction**       | Medium - Low adoption if hard to install                    | Medium (35%) | Prompt after 2 visits OR 5min use, clear benefits messaging, test on real devices                       | Design  |
-
-#### **Medium Risks (Acceptable with Monitoring)**
-
-| Risk                               | Impact                              | Probability  | Mitigation Strategy                                                               | Status   |
-| ---------------------------------- | ----------------------------------- | ------------ | --------------------------------------------------------------------------------- | -------- |
-| **Service Worker Cache Staleness** | Low - Users see outdated UI         | Low (15%)    | Workbox cache invalidation, version-based cache keys, prompt to refresh on update | Standard |
-| **Third-Party API Outages**        | Medium - OpenAI API downtime        | Low (10%)    | Dictionary fallback, retry logic, clear error messages                            | Designed |
-| **Safari iOS Storage Quota**       | Medium - Safari has stricter limits | Medium (30%) | Test on real Safari iOS, implement storage monitoring, warn users proactively     | Test     |
-
----
-
-### 11.2 User Behavior Risks
-
-**Primary Risk:** Users don't discover or adopt slash commands
-
-**Issues:**
-
-- Users unaware of slash command feature (don't type "/")
-- Students stick to manual formatting instead of using /template
-- Users forget available commands (don't remember /formula exists)
-- Resistance to changing workflows (stick to Google Docs/Notion)
-- Over-reliance on AI leading to passive note-taking (copying suggestions without understanding)
-
-**Mitigation Strategies:**
-
-- Simple welcome screen demonstrating slash commands (show "/" in action)
-- Onboarding highlights /template and /formula with examples
-- Track slash command usage metrics in first week to detect issues early
-- User interviews (5-10 students) before development to validate usefulness
-- Clear value proposition: "Type / for instant templates and formulas"
-- In-editor hints/tooltips when users pause (e.g., "Tip: Type / for templates")
-
-**Validation Criteria:**
-
-- ≥60% of users use slash commands in Week 1 (Green light)
-- <40% = Yellow light, improve discoverability and onboarding
-
----
-
-### 11.3 Business Risks
-
-**Competition Risk:**
-
-- Generalist AI note apps (Notion AI, Obsidian with plugins) could add nursing-specific features
-- OpenAI could integrate note-taking into ChatGPT
-- Established medical education platforms (Osmosis, Picmonic) could add note features
-
-**Mitigation:**
-
-- Focus on nursing-specific terminology and NCLEX relevance
-- Build community (student success stories, study tips)
-- Faster iteration than large competitors
-
-**API Dependency Risk:**
-
-- OpenAI API pricing increases
-- API deprecations or policy changes
-- Service reliability issues
-
-**Mitigation:**
-
-- Abstract AI layer (easier to swap providers)
-- Dictionary fallback reduces dependency
-- Monitor costs weekly with alerts
-- Consider alternative providers (Anthropic Claude, local models) for future
-
-**Scope Creep Risk:**
-
-- Users request features outside MVP scope
-- Pressure to add flashcards, collaboration, LMS integrations
-
-**Mitigation:**
-
-- Clear communication about MVP priorities
-- Public roadmap with "planned for future" items
-- User voting on feature priorities (Pro tier benefit)
-
----
-
-### 11.4 Summary of Mitigation Strategies
-
-**Technical Debt Prevention:**
-
-- Don't rush complex features (version cleanup, conflict resolution)
-- Simplify to "good enough" for MVP (line-based diff, last-write-wins)
-- Defer optimization until usage patterns are known
-
-**User Validation:**
-
-- 5-10 student interviews before development
-- 1-week alpha test (10 users) to validate quotas and workflows
-- Continuous feedback loop during beta
-
-**Cost Control:**
-
-- Request-based quotas prevent runaway costs
-- Dictionary fallback for offline and over-quota users
-- Monitor OpenAI spending daily during beta
-
-**Quality Assurance:**
-
-- 60% test coverage on critical paths
-- Real device testing for PWA (Safari iOS, Chrome Android)
-- Medical terminology validation against nursing dictionary
-
----
+- **SC-011:** 50%+ of users report they would be "very disappointed" if NEXLY RN no longer existed (Sean Ellis test), measured via quarterly PMF survey
+- **SC-012:** Average session length of 15+ minutes (indicating deep engagement with editor), measured via analytics session duration
+- **SC-013:** 30%+ of users create 10+ notes within first month (power user indicator), tracked via database query
+- **SC-014:** Organic growth rate of 15%+ month-over-month through word-of-mouth referrals, measured as (new users month N / new users month N-1) - 1
+- **SC-015:** NPS (Net Promoter Score) of 40+ indicating strong user satisfaction and recommendation likelihood, measured via quarterly NPS survey

@@ -28,6 +28,7 @@ Create a new Agent Skill named $1 with requirements: $2
 
 ### Phase 1: Preparation and Validation
 
+- Must Read @.claude/templates/skills.md for the SKILL.md template structure
 - Must Read @.claude/context/claude-skills/custom-skills.md for complete standards
 - Read PROACTIVELY `.claude/context/claude-skills/best-practices.md`
 - Read PROACTIVELY `.claude/context/claude-skills/claude-code-skills.md`
@@ -43,26 +44,9 @@ Create a new Agent Skill named $1 with requirements: $2
 - Include what the skill does (capabilities)
 - Include when to use it (trigger keywords and specific use cases)
 - Ensure description is maximum 1024 characters
-- Design SKILL.md structure with proper YAML frontmatter:
-
-```markdown
----
-name: [validated $1]
-description: [trigger-rich description]
----
-
-# [Title Case Name]
-
-## Instructions
-
-[Concise, step-by-step guidance - assume Claude is smart]
-
-## Examples
-
-[Concrete input/output examples]
-
-## [Optional sections as needed]
-```
+- Design SKILL.md structure following @.claude/templates/skills.md template
+- Populate all sections based on $2 requirements
+- Ensure YAML frontmatter contains validated name and trigger-rich description
 
 ### Phase 3: File Generation and Validation
 
@@ -74,9 +58,13 @@ description: [trigger-rich description]
   - [ ] Name meets all naming rules
   - [ ] Description specific with triggers
   - [ ] Body under 500 lines
+  - [ ] Follows @.claude/templates/skills.md structure
+  - [ ] All template sections populated appropriately
+  - [ ] Context section clearly defines objectives
+  - [ ] Workflow organized in phases with task IDs
+  - [ ] Implementation strategy, constraints, and success criteria defined
   - [ ] No time-sensitive information
   - [ ] Consistent terminology
-  - [ ] Concrete examples included
   - [ ] File references one level deep
 
 ## 4. Constraints / Rules
@@ -100,7 +88,9 @@ description: [trigger-rich description]
 
 ### SKILL.md Structure
 
+- Must follow @.claude/templates/skills.md template structure
 - YAML frontmatter with `name` and `description`
+- Include all sections: Context, Workflow, Implementation Strategy, Constraints, Success Criteria
 - Concise body under 500 lines (challenge every explanation)
 - Only add context Claude doesn't already have
 - Use concrete examples, not abstract explanations
@@ -152,6 +142,7 @@ description: [trigger-rich description]
 
 ## 6. References
 
+- @.claude/templates/skills.md - SKILL.md template structure
 - `.claude/context/claude-skills/custom-skills.md` - Complete skill standards
 - `.claude/context/claude-skills/best-practices.md` - Best practices for skill creation
 - `.claude/context/claude-skills/claude-code-skills.md` - Claude Code skill guidelines
@@ -186,5 +177,8 @@ After creating the skill, provide:
 ✅ Description under 1024 chars with triggers
 ✅ Body under 500 lines
 ✅ YAML frontmatter valid
+✅ Follows @.claude/templates/skills.md structure
+✅ All required sections present (Context, Workflow, Implementation Strategy, Constraints, Success Criteria)
+✅ Workflow organized in phases with task IDs
 [Additional checks...]
 ```

@@ -3,7 +3,7 @@ name: create-script
 description: Deploy script-writer agent to create Python scripts
 allowed-tools: all
 argument-hint: <script-name> <instructions>
-model: claude-3-5-haiku-latest
+model: claude-opus-4-5-20251101
 ---
 
 Deploy @agent-script-writer to create a Python script named $1 that will $2. Save the script to ./scripts/ directory.

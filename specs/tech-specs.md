@@ -5,7 +5,7 @@
 **Architecture**: Progressive Web App (PWA) with Next.js
 **Primary Stack**: Next.js 15.1 + React 19.1 + TypeScript 5.9 + Tailwind 4.1 + Tiptap 3.4
 **Deployment**: Vercel (recommended) or Firebase Hosting
-**Core Concept**: Three-mode workflow (Create, Edit, Study) separating fast capture, confident revision, and AI-powered key term identification
+**Core Concept**: Distraction-free note-taking with AI-powered medical autocomplete, nursing-specific templates, and bulletproof offline sync
 
 ### Technology Stack
 
@@ -15,8 +15,11 @@
 - **State Management**: Zustand 5.0.8 + Immer 10.1.3
 - **Authentication**: Firebase Auth (Client SDK + Admin SDK)
 - **Database**: Firestore (primary) + Dexie (IndexedDB for offline)
-- **AI Integration**: OpenAI API via Next.js API routes
+- **AI Integration**: OpenAI API (GPT-4.1 nano) via Next.js API routes
+- **Payment Processing**: Stripe (subscriptions and checkout)
 - **PWA**: next-pwa 5.6.0 for offline support
+- **Analytics**: Vercel Analytics
+- **Error Tracking**: Sentry
 
 ---
 
@@ -32,11 +35,11 @@
 
 **Component Strategy**
 - Shadcn UI components in `/components/ui` (auto-generated, do not modify)
-- Custom app components in `/components` (editor, notes, study)
+- Custom app components in `/components` (editor, notes, layout)
 - Server Components by default, Client Components only when needed
 
 **State Management**
-- Zustand for client-side state (editor mode, preferences, quota)
+- Zustand for client-side state (editor state, preferences, quota)
 - React Server Components for server-side data fetching
 - Optimistic UI updates with `React.useOptimistic`
 - LocalStorage persistence for user preferences
@@ -52,10 +55,12 @@
 **API Endpoints**
 ```
 POST /api/auth/initialize       # Create user doc after signup
-POST /api/ai/autocomplete        # GPT-4.1 nano autocomplete
-POST /api/ai/spot-terms          # GPT-4o-mini key term spotting
-GET  /api/users/quota            # Check usage quota
-POST /api/users/update-tier      # Update subscription
+POST /api/ai/autocomplete       # GPT-4.1 nano autocomplete
+GET  /api/users/quota           # Check usage quota
+POST /api/users/update-tier     # Update subscription
+POST /api/stripe/checkout       # Create Stripe checkout session
+POST /api/stripe/webhook        # Handle Stripe webhooks
+POST /api/stripe/portal         # Create customer portal session
 ```
 
 ---
@@ -72,18 +77,23 @@ interface UserProfile {
   userId: string;
   email: string;
   displayName: string;
-  tier: "free" | "pro" | "team";
+  tier: "free" | "pro";
 
   usage: {
     autocompleteRequests: number;    // Free: 100/month
-    keyTermSpottingUses: number;     // Free: 10/month
     resetDate: Timestamp;
   };
 
   settings: {
     theme: "light" | "dark" | "system";
     autoSave: boolean;
-    defaultMode: "create" | "edit" | "study";
+  };
+
+  stripe: {
+    customerId?: string;
+    subscriptionId?: string;
+    subscriptionStatus?: "active" | "canceled" | "past_due";
+    currentPeriodEnd?: Timestamp;
   };
 
   createdAt: Timestamp;
@@ -102,20 +112,10 @@ interface Note {
   userId: string;
   title: string;
   content: JSONContent;              // Tiptap JSON document
-  mode: "create" | "edit" | "study";
+
+  category: "pharmacology" | "med-surg" | "pediatrics" | "ob" | "mental-health" | "clinical-rotation" | "other";
 
   metadata: {
-    lectureDate?: Timestamp;
-    courseCode?: string;              // e.g., "NURS 301"
-    timestamps: Array<{
-      time: string;                   // e.g., "14:23"
-      position: number;
-    }>;
-  };
-
-  tags: string[];
-
-  stats: {
     wordCount: number;
     characterCount: number;
   };
@@ -126,15 +126,18 @@ interface Note {
     deviceId: string;
   };
 
+  isDeleted: boolean;                // Soft delete flag
+  deletedAt?: Timestamp;             // When moved to trash
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
 ```
 
 **Composite Indexes**:
-- `userId` + `updatedAt` (note library sorting)
-- `userId` + `metadata.courseCode` + `updatedAt` (filtering)
-- `userId` + `tags` (tag filtering)
+- `userId` + `isDeleted` + `updatedAt` (note library sorting)
+- `userId` + `isDeleted` + `category` + `updatedAt` (category filtering)
+- `userId` + `isDeleted` + `deletedAt` (trash management)
 
 **Tiptap Content Structure**
 ```typescript
@@ -150,7 +153,7 @@ const content: JSONContent = {
 };
 ```
 
-#### Version Snapshots (Backend Only in MVP)
+#### Version Snapshots (Backend Only - No UI in MVP)
 **Path**: `/users/{userId}/notes/{noteId}/snapshots/{snapshotId}`
 
 ```typescript
@@ -158,7 +161,6 @@ interface VersionSnapshot {
   id: string;
   noteId: string;
   content: JSONContent;
-  mode: "create" | "edit" | "study";
   timestamp: Timestamp;
 
   changesSummary: {
@@ -166,20 +168,20 @@ interface VersionSnapshot {
     removedWords: number;
   };
 
-  snapshotType: "auto" | "manual" | "mode_switch";
+  snapshotType: "auto" | "manual" | "sync_conflict";
+  conflictSource?: string;           // Device ID if sync conflict
 }
 ```
 
-**MVP Note**: Snapshots stored but **no UI** to view/manage them in 4-week MVP. Enables Fast-Follow features (Week 7-8).
+**MVP Note**: Snapshots stored for sync conflict recovery but **no UI** to browse version history. Enables Fast-Follow features.
 
 **Retention Policy**:
-- Free tier: Last 5 snapshots per note (auto-deleted)
+- Free tier: Last 10 snapshots per note (auto-deleted)
 - Pro tier: Unlimited snapshots
-- Team tier: Unlimited + 3-year guarantee
 
 ### Dexie (IndexedDB) Schema
 
-**Tables**: `notes`, `syncQueue`, `versionSnapshots`, `definitions`, `userPreferences`
+**Tables**: `notes`, `syncQueue`, `versionSnapshots`, `userPreferences`
 
 ```typescript
 export class NexlyDatabase extends Dexie {
@@ -190,7 +192,7 @@ export class NexlyDatabase extends Dexie {
   constructor() {
     super("nexly_rn");
     this.version(1).stores({
-      notes: "id, userId, updatedAt, [userId+updatedAt], *tags",
+      notes: "id, userId, updatedAt, category, isDeleted, [userId+updatedAt], [userId+category]",
       syncQueue: "++id, createdAt, [operation+collection]",
       versionSnapshots: "id, [userId+noteId+timestamp], noteId, timestamp",
     });
@@ -210,6 +212,7 @@ export class NexlyDatabase extends Dexie {
 - Email/password signup and login
 - Session management with cookies (httpOnly, secure)
 - Auto token refresh (1-hour expiry)
+- Password requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
 
 **Server-Side** (Firebase Admin SDK)
 - Token verification in middleware and API routes
@@ -230,7 +233,7 @@ const userId = decodedToken.uid;
 - Users can only read/write their own data
 - Snapshots are immutable (no updates allowed)
 - User deletion prevented (soft delete only)
-- Tier-based permissions for team features
+- Tier-based quota enforcement via API routes
 
 ```javascript
 // Helper functions
@@ -261,8 +264,10 @@ match /users/{userId}/notes/{noteId} {
 - HTTPS only (automatic with Vercel)
 - Firebase Auth token validation on all API routes
 - Input validation via Zod schemas
-- Rate limiting per user (100 autocomplete/month, 10 key terms/month)
-- No AI training on user data
+- Rate limiting: 60 requests/min per user (excluding AI which has quota)
+- AI quota: 100 requests/month (Free), unlimited (Pro)
+- Stripe webhook signature validation
+- Environment variables never exposed to client
 
 ---
 
@@ -272,48 +277,127 @@ match /users/{userId}/notes/{noteId} {
 
 **API Route**: `POST /api/ai/autocomplete`
 
-**Request**: `{ context: string, cursorPosition: number }`
-**Response**: `{ suggestions: string[], quotaRemaining: number }`
+**Request**:
+```typescript
+{
+  context: string;          // Text before cursor (last 500 chars)
+  cursorPosition: number;
+  partialWord: string;      // Current word being typed
+}
+```
 
-**Specifications**:
-- Model: GPT-4.1 nano (fast, cost-effective)
-- Performance target: <100ms
-- Quota: 100 requests/month (Free), unlimited (Pro)
-- Fallback: Local nursing dictionary (5000+ terms)
-
-### Key Term Spotting (GPT-4o-mini)
-
-**API Route**: `POST /api/ai/spot-terms`
-
-**Request**: `{ noteId: string, content: JSONContent }`
 **Response**:
 ```typescript
 {
-  terms: Array<{
-    term: string;
-    position: number;
-    context: string;
-    importance: "high" | "medium" | "low";
-    reason: string;
-  }>;
+  suggestions: string[];    // Max 5 suggestions
   quotaRemaining: number;
+  source: "ai" | "dictionary";
 }
 ```
 
 **Specifications**:
-- Model: GPT-4o-mini with Structured Outputs
-- Performance target: <5s for 3000-word note
-- Quota: 10 uses/month (Free), unlimited (Pro)
+- Model: GPT-4.1 nano (fast, cost-effective)
+- Performance target: <200ms
+- Quota: 100 requests/month (Free), unlimited (Pro)
+- Fallback: Local nursing dictionary (5,000+ terms from OpenMD)
+- Request throttling: Max 1 request per 3 seconds per user
+
+### Dictionary Fallback
+
+**Local Dictionary**: 5,000+ nursing terms (JSON format)
+- Source: OpenMD Nursing Terminology Database (CC BY-SA 4.0)
+- Categories: Medications, conditions, procedures, anatomy, abbreviations
+- Stored in `/public/dictionaries/nursing-terms.json`
+- Loaded into memory on app init, cached in IndexedDB
+
+**Fallback Triggers**:
+- AI quota exceeded
+- Offline mode detected
+- AI API timeout (>500ms)
+- AI API error
 
 ### Quota Management
 
 **Tracking**: Firestore `users` collection (`usage` field)
 **Enforcement**: Client-side pre-check + Server-side validation
-**Fallback**: Local dictionary for autocomplete, upgrade prompt for key terms
+**Reset**: Monthly on user's signup anniversary date
+**Display**: Quota badge in editor toolbar
 
 ---
 
-## 6. Offline & Sync Strategy
+## 6. Slash Commands System
+
+### Command Architecture
+
+**Trigger**: User types "/" in editor
+**Parser**: Tiptap extension with custom slash command handler
+**Menu**: Floating menu with command options
+
+### Available Commands
+
+#### /template
+Inserts pre-formatted nursing document templates.
+
+**Options**:
+| Template | Description |
+|----------|-------------|
+| Care Plan | Nursing Diagnosis → Goals → Interventions → Evaluation |
+| Medication Card | Drug → Classification → Action → Dose → Side Effects → Nursing Considerations |
+| SOAP Note | Subjective → Objective → Assessment → Plan |
+| Head-to-Toe Assessment | Systematic body assessment structure |
+| Pathophysiology Outline | Disease → Etiology → Pathophysiology → Clinical Manifestations → Treatment |
+
+**Implementation**:
+```typescript
+const templates: Record<string, JSONContent> = {
+  "care-plan": {
+    type: "doc",
+    content: [
+      { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Nursing Diagnosis" }] },
+      { type: "paragraph", content: [] },
+      { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Goals" }] },
+      // ... more sections
+    ]
+  },
+  // ... more templates
+};
+```
+
+#### /formula
+Inserts clinical formulas with normal ranges.
+
+**Options**:
+| Formula | Normal Range |
+|---------|--------------|
+| MAP (Mean Arterial Pressure) | 70-100 mmHg |
+| BMI (Body Mass Index) | 18.5-24.9 |
+| IV Drip Rate (gtt/min) | Calculated |
+| Dosage Calculation (mg/kg) | Calculated |
+| Glasgow Coma Scale | 3-15 |
+| Fluid Deficit | Calculated |
+
+**Implementation**:
+```typescript
+const formulas: Record<string, JSONContent> = {
+  "map": {
+    type: "doc",
+    content: [
+      { type: "heading", attrs: { level: 3 }, content: [{ type: "text", text: "Mean Arterial Pressure (MAP)" }] },
+      { type: "paragraph", content: [
+        { type: "text", text: "Formula: MAP = (SBP + 2×DBP) / 3" }
+      ]},
+      { type: "paragraph", content: [
+        { type: "text", marks: [{ type: "bold" }], text: "Normal Range: 70-100 mmHg" }
+      ]},
+    ]
+  },
+  // ... more formulas
+};
+```
+
+---
+
+## 7. Offline & Sync Strategy
 
 ### Data Flow Pattern
 
@@ -321,11 +405,25 @@ match /users/{userId}/notes/{noteId} {
 2. **Read Path**: Dexie first (instant) → Firestore real-time updates (merge)
 3. **Conflict Resolution**: Last-write-wins with version tracking
 
+### Auto-Save
+
+**Frequency**: Every 30 seconds of inactivity
+**Indicator**: "Saved" badge in toolbar with timestamp
+**Local**: Always saves to Dexie immediately
+**Cloud**: Syncs to Firestore when online
+
 ### Sync Queue
 
 **Purpose**: Queue operations when offline, replay when online
-**Retry Logic**: Max 5 retries with exponential backoff
-**Operations**: `create`, `update`, `delete` for notes and snapshots
+**Retry Logic**: Max 5 retries with exponential backoff (5s, 15s, 30s, 60s, 120s)
+**Operations**: `create`, `update`, `delete` for notes
+
+### Conflict Resolution
+
+**Algorithm**: Last-write-wins (most recent timestamp)
+**Conflict Detection**: Compare `version` and `updatedAt` fields
+**Recovery**: Overwritten version saved as snapshot with `snapshotType: "sync_conflict"`
+**User Notification**: Toast notification indicating which device's version was kept
 
 ### PWA Configuration
 
@@ -342,7 +440,72 @@ match /users/{userId}/notes/{noteId} {
 
 ---
 
-## 7. Performance Optimization
+## 8. Payment Integration (Stripe)
+
+### Subscription Tiers
+
+| Tier | Price | AI Autocomplete | Features |
+|------|-------|-----------------|----------|
+| Free | $0 | 100/month | Core editor, templates, formulas, offline sync |
+| Pro | $8.99/month or $79/year | Unlimited | All Free features + unlimited AI |
+
+### Stripe Integration
+
+**Checkout Flow**:
+1. User clicks "Upgrade to Pro"
+2. `POST /api/stripe/checkout` creates Stripe Checkout session
+3. User redirected to Stripe-hosted payment page
+4. On success, webhook updates user tier in Firestore
+
+**Webhook Events**:
+- `checkout.session.completed`: Create subscription, update tier to Pro
+- `customer.subscription.updated`: Handle plan changes
+- `customer.subscription.deleted`: Downgrade to Free
+- `invoice.payment_failed`: Handle failed payments
+
+**Customer Portal**:
+- Users manage subscription via Stripe Customer Portal
+- `POST /api/stripe/portal` creates portal session
+- Handles cancellation, plan changes, payment method updates
+
+### Security
+
+- Webhook signature validation with `STRIPE_WEBHOOK_SECRET`
+- Never expose Stripe secret key to client
+- Use Stripe.js for PCI-compliant card handling
+
+---
+
+## 9. Note Organization
+
+### Categories
+
+**Predefined Categories**:
+- Pharmacology
+- Med-Surg
+- Pediatrics
+- OB
+- Mental Health
+- Clinical Rotation
+- Other
+
+**Implementation**: Enum field on Note model, filterable in notes library
+
+### Search
+
+**Client-Side**: Full-text search on title and content (Dexie)
+**Performance**: <300ms for libraries up to 1,000 notes
+
+### Trash System
+
+**Soft Delete**: `isDeleted: true`, `deletedAt: Timestamp`
+**Recovery Period**: 30 days
+**Permanent Deletion**: Cloud Function runs daily, deletes notes where `deletedAt` > 30 days ago
+**User Actions**: View trash, restore note, permanently delete
+
+---
+
+## 10. Performance Optimization
 
 ### Next.js Optimizations
 
@@ -373,45 +536,51 @@ const TiptapEditor = dynamic(() => import("@/components/editor/tiptap-editor"), 
 - First Input Delay (FID): <100ms
 
 **Feature Targets**:
-- Autocomplete: <100ms (GPT-4.1 nano)
-- Mode transitions: <50ms
-- Inline diff: <200ms
-- Key term spotting: <5s (GPT-4o-mini)
+- AI Autocomplete: <200ms
+- Auto-save: <500ms (non-blocking)
+- Search: <300ms
+- Slash command menu: <100ms
 
 **Optimization Strategies**:
 - Server Components for initial renders
 - Debounce autocomplete (150ms)
-- Debounce diff calculation (500ms)
 - Virtual scrolling for long note lists
 - Lighthouse score >90
 
 ---
 
-## 8. Project Structure
+## 11. Project Structure
 
 ```
 nexly-rn/
 ├── src/app/                      # Next.js App Router
-│   ├── (auth)/                   # Public routes (login, signup)
-│   ├── (dashboard)/              # Authenticated app (notes, settings)
+│   ├── (auth)/                   # Public routes (login, signup, reset-password)
+│   ├── (dashboard)/              # Authenticated app
+│   │   ├── notes/                # Notes library and editor
+│   │   ├── trash/                # Trash folder
+│   │   ├── settings/             # User settings
+│   │   └── onboarding/           # First-time user experience
 │   ├── api/                      # Serverless API routes
 │   │   ├── auth/initialize/
 │   │   ├── ai/autocomplete/
-│   │   ├── ai/spot-terms/
-│   │   └── users/quota/
+│   │   ├── users/quota/
+│   │   ├── stripe/checkout/
+│   │   ├── stripe/webhook/
+│   │   └── stripe/portal/
 │   ├── layout.tsx                # Root layout
 │   └── globals.css               # Global styles
 │
 ├── src/components/               # UI components
 │   ├── ui/                       # Shadcn components (auto-generated)
-│   ├── editor/                   # Tiptap editor, autocomplete, toolbar
+│   ├── editor/                   # Tiptap editor, autocomplete, toolbar, slash commands
 │   ├── notes/                    # Notes library, cards, dialogs
-│   └── study/                    # Study mode (key terms sidebar)
+│   └── layout/                   # Navbar, sidebar
 │
 ├── src/lib/                      # Core logic
 │   ├── firebase/                 # Client + Admin SDK setup
 │   ├── dexie/                    # IndexedDB schema + sync
 │   ├── ai/                       # OpenAI integrations
+│   ├── stripe/                   # Stripe client + helpers
 │   └── validations.ts            # Zod schemas
 │
 ├── src/hooks/                    # Custom React hooks
@@ -420,7 +589,7 @@ nexly-rn/
 │   └── data/                     # Firestore + Dexie sync hooks
 │
 ├── src/types/                    # TypeScript types
-│   ├── models/                   # Note, User, Snapshot interfaces
+│   ├── models/                   # Note, User interfaces
 │   └── api/                      # API request/response types
 │
 ├── public/                       # Static files
@@ -435,7 +604,7 @@ nexly-rn/
 
 ---
 
-## 9. Environment Variables
+## 12. Environment Variables
 
 ```env
 # Firebase (Client - Public)
@@ -454,13 +623,21 @@ FIREBASE_ADMIN_PRIVATE_KEY=
 # OpenAI
 OPENAI_API_KEY=
 
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+
 # App Config
 NEXT_PUBLIC_APP_URL=https://nexly-rn.vercel.app
+
+# Monitoring
+SENTRY_DSN=
 ```
 
 ---
 
-## 10. Dependencies
+## 13. Dependencies
 
 ### Core Dependencies
 ```json
@@ -469,14 +646,19 @@ NEXT_PUBLIC_APP_URL=https://nexly-rn.vercel.app
   "react": "19.1.1",
   "typescript": "5.9.3",
   "@tiptap/react": "3.4.2",
+  "@tiptap/starter-kit": "3.4.2",
+  "@tiptap/extension-placeholder": "3.4.2",
   "firebase": "^10.x",
   "firebase-admin": "^12.x",
   "openai": "5.23.1",
   "dexie": "4.2.0",
   "zustand": "5.0.8",
+  "immer": "10.1.3",
   "tailwindcss": "4.1.13",
   "next-pwa": "5.6.0",
-  "zod": "3.25.67"
+  "zod": "3.25.67",
+  "stripe": "^14.x",
+  "@stripe/stripe-js": "^2.x"
 }
 ```
 
@@ -486,26 +668,31 @@ NEXT_PUBLIC_APP_URL=https://nexly-rn.vercel.app
   "vitest": "3.2.4",
   "@testing-library/react": "16.3.0",
   "playwright": "1.55.0",
-  "prettier": "^3.x"
+  "prettier": "^3.x",
+  "@sentry/nextjs": "^7.x"
 }
 ```
 
 ---
 
-## 11. Testing Strategy
+## 14. Testing Strategy
 
 ### Unit Testing (Vitest)
 - Component tests for UI components
 - Hook tests for custom React hooks
 - Utility function tests
+- Slash command parser tests
 
 ### E2E Testing (Playwright)
-- Critical user flows (signup, create note, AI features)
+- Critical user flows (signup, create note, save, sync)
+- Offline mode testing
+- Slash command insertion
+- AI autocomplete flow
 - Cross-browser testing (Chromium, Firefox, WebKit)
 
 ---
 
-## 12. Deployment
+## 15. Deployment
 
 ### Vercel (Recommended)
 - Automatic deployments on `git push`
@@ -520,52 +707,56 @@ NEXT_PUBLIC_APP_URL=https://nexly-rn.vercel.app
 
 ---
 
-## 13. 4-Week Build Timeline
+## 16. 4-Week Build Timeline
 
 ### Week 1: Foundation
 - Next.js setup + App Router
 - Firebase integration (Client + Admin SDK)
 - Shadcn UI components
-- Auth flow (signup, login, logout)
-- Mode switching logic
-- Edit/Study dialog
+- Auth flow (signup, login, logout, password reset)
+- Basic note CRUD (create, read, update, delete)
+- Dexie offline storage setup
 
-### Week 2: AI Autocomplete
+### Week 2: Editor & AI
 - Tiptap editor integration
+- Slash command system (/template, /formula)
 - AI autocomplete API route (GPT-4.1 nano)
-- Auto-save with version snapshots (backend only)
-- Quota tracking
-- Local dictionary fallback
+- Local dictionary fallback (5,000+ terms)
+- Auto-save with 30-second interval
+- Quota tracking and display
 
-### Week 3: Diff & Key Terms
-- Inline diff button + diff view (Edit Mode)
-- AI Key Term Spotting API route (GPT-4o-mini)
-- Key terms sidebar UI
-- Export key terms list
+### Week 3: Sync & Organization
+- Offline sync queue implementation
+- Conflict resolution (last-write-wins)
+- Note categories and filtering
+- Search functionality
+- Trash folder with recovery
+- Export to Markdown/Plain Text
 
-### Week 4: Polish & Launch
-- Note library + search
-- 2-screen onboarding
+### Week 4: Payment & Polish
+- Stripe integration (checkout, webhooks, portal)
 - PWA configuration
+- Onboarding flow
 - Performance optimization
 - E2E testing
 - Deployment to Vercel
 
 ---
 
-## 14. Fast-Follow Features (Week 5-8)
+## 17. Fast-Follow Features (Post-MVP)
 
-### Week 5-6
-- Templates API
+### Phase 1 (Week 5-6)
+- Study Mode (read-only with AI key term spotting)
+- Inline diff view (changes since last save)
+- Version history UI
+
+### Phase 2 (Week 7-8)
 - Shorthand expansion
-- Definition lookup
+- Definition-on-demand lookup
+- Cloze deletion generator
 
-### Week 7-8
-- Cloze generation
-- Full version history UI
-- Side-by-side snapshot comparison
-
-### Month 2+
-- Export notes (PDF, Markdown)
+### Future Roadmap
+- Export notes (PDF)
 - Analytics dashboard
+- NCLEX prep integration
 - Team collaboration features

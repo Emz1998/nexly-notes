@@ -6,20 +6,9 @@ argument-hint:
 model: sonnet
 ---
 
-Generate the project constitution file at `.claude/rules/constitution.md` by delegating to the rules-enforcer agent.
+**Goal**: Generate the project constitution file at `.claude/rules/constitution.md` by delegating to the rules-enforcer agent
 
-## 1. Context
-
-This command creates the highest-level governance document for the NEXLY RN project by leveraging the specialized rules-enforcer agent.
-
-- Purpose: Establish foundational principles, values, and constraints that govern all development
-- Use case: When initializing project governance or updating constitutional rules
-- Dependencies: @.claude/agents/architect/rules-enforcer.md, constitution template, existing codebase patterns
-- Authority: The constitution serves as the ultimate reference for resolving conflicts or ambiguities
-
-## 2. Tasks
-
-**IMPORTANT !** Use TodoWrite tool to track the tasks that need to be completed.
+## Tasks
 
 ### Phase 1: Preparation
 
@@ -30,11 +19,7 @@ This command creates the highest-level governance document for the NEXLY RN proj
 ### Phase 2: Agent Delegation
 
 - T004: Deploy the rules-enforcer agent using the Task tool with subagent_type='rules-enforcer'
-- T005: Pass comprehensive context to the agent including:
-  - Project name: NEXLY RN
-  - Tech stack: React 19, Next.js, Tailwind v4, TypeScript, Dexie, Firebase
-  - Development philosophy: TDD, MVP mindset, Desktop-first
-  - Existing patterns from codebase analysis
+- T005: Pass comprehensive context to the agent including project name, tech stack, development philosophy, and existing patterns
 - T006: Monitor agent execution and handle any clarification questions from the agent
 
 ### Phase 3: Validation & Finalization
@@ -44,18 +29,20 @@ This command creates the highest-level governance document for the NEXLY RN proj
 - T009: Confirm the constitution file is saved at `.claude/rules/constitution.md`
 - T010: Provide summary of constitutional principles established
 
-## 3. Constraints / Rules
+## Implementation Strategy
 
-**CRITICAL: Follow these requirements exactly:**
+- Delegate constitution generation to the specialized rules-enforcer agent rather than implementing manually
+- Use the agent's pattern analysis capabilities to discover codebase conventions
+- Leverage the agent's user interview feature for ambiguous preferences
+- Ensure comprehensive context handoff including: NEXLY RN project name, React 19 + Next.js + Tailwind v4 + TypeScript tech stack, TDD development philosophy, desktop-first priority
+- Validate generated output against quality standards before finalizing
+
+## Constraints
 
 ### Delegation Requirements
 
 - **DO NOT IMPLEMENT THE TASK YOURSELF** - You must delegate to the rules-enforcer agent
-- The agent is responsible for:
-  - Analyzing existing codebase patterns
-  - Interviewing the user about coding preferences (if needed)
-  - Filling the constitution template with specific, actionable rules
-  - Ensuring no placeholders remain in the final document
+- The agent is responsible for: analyzing existing codebase patterns, interviewing the user about coding preferences (if needed), filling the constitution template with specific actionable rules, ensuring no placeholders remain in the final document
 
 ### Constitutional Principles
 
@@ -78,57 +65,37 @@ This command creates the highest-level governance document for the NEXLY RN proj
 - Define collaboration and communication expectations
 - Specify governance structure and change management processes
 
-## 4. Examples
+## Success Criteria
 
-### Good Usage Pattern
+- [ ] Constitution file created at `.claude/rules/constitution.md`
+- [ ] Rules-enforcer agent was used (not manual implementation)
+- [ ] All template placeholders replaced with NEXLY RN specific values
+- [ ] Real code examples extracted from the codebase are included
+- [ ] Core values and development philosophy sections completed
+- [ ] Technical standards reflect project's actual tech stack
+- [ ] Document hierarchy established (Constitution > PRD > Tech Specs > etc.)
+- [ ] Summary of established principles provided to user
 
-```bash
-/constitution
+## Patterns
+
+### Agent Delegation Pattern
+
+```
+1. Gather context (CLAUDE.md, existing files, codebase patterns)
+2. Deploy rules-enforcer agent via Task tool
+3. Pass structured context to agent
+4. Monitor execution and handle clarifications
+5. Validate output quality
+6. Report results to user
 ```
 
-**Result:**
-- Deploys rules-enforcer agent to analyze NEXLY RN codebase
-- Agent discovers patterns: TDD workflow, desktop-first approach, strict TypeScript usage
-- Agent interviews user about ambiguous preferences (e.g., comment style, naming conventions)
-- Generates comprehensive constitution with:
-  - Core values: Simplicity, Evidence-based decisions, User value first, Quality non-negotiable
-  - Development philosophy: TDD mandate, MVP mindset, No improvisation, Desktop-first
-  - Technical standards: Type safety, Code clarity, Security by default, Performance consciousness
-  - Real TypeScript/React patterns extracted from src/ directory
-- Saves to `.claude/rules/constitution.md`
+### Expected Agent Workflow
 
-### Bad Patterns to Avoid
+1. **Discovery Phase:** Read CLAUDE.md and project structure, scan src/ directories for patterns, extract representative code samples
+2. **Interview Phase (if needed):** Present discovered patterns for validation, ask clarifying questions, confirm priority ordering
+3. **Constitution Generation:** Fill all sections with specific values, include real code examples, create decision trees
 
-❌ Creating constitution manually without agent analysis
-❌ Using generic rules that could apply to any project
-❌ Leaving placeholder text like [PROJECT_NAME] or [EXAMPLE_CODE]
-❌ Implementing the constitution yourself instead of delegating
-❌ Skipping codebase pattern analysis or user preference gathering
-❌ Creating contradictory or unenforceable rules
-
-### Expected Agent Behavior
-
-The rules-enforcer agent will:
-
-1. **Discovery Phase:**
-   - Read CLAUDE.md and project structure
-   - Scan src/, components/, hooks/, lib/ for patterns
-   - Extract 3-5 representative code samples
-   - Identify ambiguous areas requiring clarification
-
-2. **Interview Phase (if needed):**
-   - Present discovered patterns to user for validation
-   - Ask clarifying questions about preferences
-   - Confirm priority ordering (type safety vs brevity, etc.)
-   - Gather examples of preferred vs discouraged approaches
-
-3. **Constitution Generation:**
-   - Fill all sections with specific NEXLY RN values
-   - Include real code examples from codebase
-   - Create decision trees for common scenarios
-   - Generate validation checklist based on TDD requirements
-
-## 5. References
+## References
 
 - @.claude/agents/architect/rules-enforcer.md (specialized constitution architect agent)
 - `.claude/rules/constitution.md` (target output location - highest authority document)
@@ -136,7 +103,7 @@ The rules-enforcer agent will:
 - `.claude/templates/` (constitution template and structure references)
 - Existing codebase in `src/` (for pattern extraction and examples)
 
-## 6. Output Format
+## Output Format
 
 ```markdown
 ✅ Constitution Generated Successfully

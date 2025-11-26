@@ -1,0 +1,1 @@
+Call the plan-consultant agent to review the implementation strategy created by strategic-planner. Ask the agent to give a rating on a scale of 1 to 10 and provide feedback on the plan's completeness, feasibility, and alignment with project goals.
