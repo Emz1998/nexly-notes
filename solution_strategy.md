@@ -7,6 +7,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ## Scope
 
 **In-Scope:**
+
 - Create a custom `useSortPreference` hook that manages sorting state and persistence
 - Add a sort order selector UI component in the notes library header
 - Persist sorting preference to localStorage
@@ -16,6 +17,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 - Integration test the persistence mechanism
 
 **Out-of-Scope:**
+
 - Cloud sync of preferences (MVP only uses localStorage)
 - Advanced sorting algorithms
 - Multi-column sorting
@@ -25,29 +27,19 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 
 ---
 
-## Technical Setup & Requirements
-
-- **Stack:** React 19, TypeScript, Vitest 3.2.4
-- **Hook Location:** `src/hooks/ui/useSortPreference.ts`
-- **Component Location:** `src/components/notes/SortSelector.tsx`
-- **Test Files:** `src/tests/hooks/useSortPreference.test.ts` and `src/tests/components/SortSelector.test.ts`
-- **Storage Key:** `nexly:notes:sortPreference` (prefixed to avoid collisions)
-- **Type Definition Location:** `src/types/ui/index.ts`
-- **Default Preference:** `{ field: "dateModified", order: "desc" }`
-
----
-
 ## Implementation Phases
 
 ### Phase 1: Type Definitions and Hook Architecture
 
 **Tasks:**
+
 - Define TypeScript types for sort preferences: `SortField`, `SortOrder`, `SortPreference`
 - Add type definitions to `src/types/ui/index.ts`
 - Create the custom hook skeleton with proper TypeScript interfaces
 - Document hook props, return values, and behavior in JSDoc comments
 
 **Deliverables:**
+
 - `src/types/ui/index.ts` - Type definitions
 - `src/hooks/ui/useSortPreference.ts` - Hook skeleton with types
 
@@ -56,6 +48,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ### Phase 2: Hook Implementation
 
 **Tasks:**
+
 - Implement `useSortPreference` hook with the following features:
   - Read preference from localStorage on mount
   - Provide `sortPreference` state getter
@@ -67,6 +60,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 - Add memoization to prevent unnecessary renders
 
 **Deliverables:**
+
 - Fully functional `useSortPreference` hook with error handling
 
 ---
@@ -74,6 +68,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ### Phase 3: UI Component Implementation
 
 **Tasks:**
+
 - Create `SortSelector.tsx` component that:
   - Consumes the `useSortPreference` hook
   - Renders a dropdown/menu with sort options
@@ -85,6 +80,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 - Add descriptive labels for each sort option
 
 **Deliverables:**
+
 - `src/components/notes/SortSelector.tsx` component
 - Accessibility-compliant implementation
 
@@ -93,6 +89,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ### Phase 4: Hook and Component Testing
 
 **Tasks:**
+
 - Write unit tests for `useSortPreference` hook:
   - Test default value initialization
   - Test localStorage read on mount
@@ -108,6 +105,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 - Ensure all tests pass with >90% code coverage
 
 **Deliverables:**
+
 - `src/tests/hooks/useSortPreference.test.ts` - Hook tests
 - `src/tests/components/SortSelector.test.ts` - Component tests
 
@@ -116,6 +114,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ### Phase 5: Integration and Documentation
 
 **Tasks:**
+
 - Integrate `SortSelector` component into the Notes Library page (add to header)
 - Verify component displays correctly in the layout
 - Update the notes list to apply sorting preference from hook
@@ -129,6 +128,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 - Validate that feature works in offline mode
 
 **Deliverables:**
+
 - Integration of SortSelector into Notes Library
 - Complete test coverage passing
 - Documentation for future developers
@@ -152,12 +152,14 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ## Files to Be Modified/Created
 
 **New Files:**
+
 - `src/hooks/ui/useSortPreference.ts`
 - `src/components/notes/SortSelector.tsx`
 - `src/tests/hooks/useSortPreference.test.ts`
 - `src/tests/components/SortSelector.test.ts`
 
 **Modified Files:**
+
 - `src/types/ui/index.ts` - Add SortPreference types
 - `src/components/notes/NotesLibrary.tsx` (or similar) - Integrate SortSelector component
 - `src/types/index.ts` - Export new types from barrel export
@@ -166,14 +168,14 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| localStorage quota exceeded | Hook fails silently, preference lost | Implement try-catch, provide fallback to in-memory state, log warnings |
-| Corrupted localStorage data | Hook throws error on parse | Validate JSON with schema validation, clear corrupted data, use default |
-| Multiple browser tabs out of sync | User expects sync but changes don't propagate | Document limitation, focus on MVP scope (single-tab testing first) |
-| Hook called during SSR | localStorage undefined error | Guard hook with `typeof window !== 'undefined'`, provide conditional logic |
-| TypeScript type complexity | Hard to maintain or extend | Use discriminated unions for sort options, keep types simple and focused |
-| Test environment lacks localStorage | Tests fail in test runner | Mock localStorage with vitest setup file, provide proper test utilities |
+| Risk                                | Impact                                        | Mitigation                                                                 |
+| ----------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------- |
+| localStorage quota exceeded         | Hook fails silently, preference lost          | Implement try-catch, provide fallback to in-memory state, log warnings     |
+| Corrupted localStorage data         | Hook throws error on parse                    | Validate JSON with schema validation, clear corrupted data, use default    |
+| Multiple browser tabs out of sync   | User expects sync but changes don't propagate | Document limitation, focus on MVP scope (single-tab testing first)         |
+| Hook called during SSR              | localStorage undefined error                  | Guard hook with `typeof window !== 'undefined'`, provide conditional logic |
+| TypeScript type complexity          | Hard to maintain or extend                    | Use discriminated unions for sort options, keep types simple and focused   |
+| Test environment lacks localStorage | Tests fail in test runner                     | Mock localStorage with vitest setup file, provide proper test utilities    |
 
 ---
 
@@ -195,6 +197,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ## Key Implementation Details
 
 ### Hook Return Type
+
 ```typescript
 {
   sortPreference: SortPreference;
@@ -204,6 +207,7 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ```
 
 ### Storage Format
+
 ```json
 {
   "field": "dateModified" | "title" | "category",
@@ -212,11 +216,13 @@ Implement and validate a simple "Note Sorting Preferences" feature that persists
 ```
 
 ### Error Handling Strategy
+
 - localStorage write errors: Log warning, keep state in memory
 - Corrupted data on read: Use default, clear localStorage key
 - SSR environment: Defer to client-side only via useEffect
 
 ### Component Integration
+
 The `SortSelector` will be placed in the Notes Library header next to search/filter controls, providing users immediate access to sort preferences without disrupting their workflow.
 
 ---
