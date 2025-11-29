@@ -1,142 +1,181 @@
 #!/usr/bin/env python3
 """
-PostToolUse hook for /implement command workflow reviews.
+TDD Workflow Compliance Hook - PreToolUse & SessionStart
 
-Deterministic triggers (only when /implement is active):
-1. Write to implementation-plan.md -> plan-consultant review
-2. Code file edits (Write/Edit) -> code-reviewer review
+Enforces linear phase progression:
+explore → research → research_review → plan → plan_consult →
+failing_test → passing_test → refactor → code_review → commit
 
-This replaces skill-based triggering with hook-based deterministic triggers.
+Exit Codes:
+  0 = ALLOW (tool proceeds)
+  2 = BLOCK (tool blocked, message shown to Claude)
 """
 
 import json
-import os
 import sys
-from typing import Literal
-
-# Paths
-HOOK_DIR = os.path.dirname(__file__)
-PROMPTS_DIR = os.path.join(HOOK_DIR, "prompts")
-STATE_FILE = os.path.join(HOOK_DIR, "implement-active.json")
-
-# Plan file pattern - triggers plan-consultant review
-PLAN_FILE_NAME = "implementation-plan.md"
-
-# Code file extensions that trigger code review
-CODE_EXTENSIONS = (".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css")
+from pathlib import Path
 
 
-## Send context to Claude
-def send_context(context: str, hook_event: str = "PostToolUse") -> dict:
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": hook_event,
-            "additionalContext": context,
-        }
-    }
+# =============================================================================
+# WORKFLOW CONFIGURATION
+# =============================================================================
+
+WORKFLOW_PHASES = [
+    "explore",
+    "research",
+    "research_review",
+    "plan",
+    "plan_consult",
+    "failing_test",
+    "passing_test",
+    "refactor",
+    "code_review",
+    "commit",
+]
+
+REQUIRED_AGENT_BY_PHASE = {
+    "explore":         "codebase-explorer",
+    "research":        "research-specialist",
+    "research_review": "research-consultant",
+    "plan":            "strategic-planner",
+    "plan_consult":    "plan-consultant",
+    "failing_test":    "test-manager",
+    "passing_test":    "test-manager",
+    "code_review":     "code-reviewer",
+    "commit":          "version-manager",
+}
+
+PHASES_ALLOWING_CODE_CHANGES = ("failing_test", "passing_test", "refactor")
+
+SOURCE_CODE_EXTENSIONS = (".py", ".js", ".ts", ".tsx", ".jsx", ".css", ".html")
+
+WORKFLOW_STATE_FILE = Path(__file__).parent / "state.json"
+
+DEFAULT_PHASE = "explore"
 
 
-def is_implement_active() -> bool:
-    """Check if /implement command is currently active."""
+# =============================================================================
+# WORKFLOW STATE
+# =============================================================================
+
+def read_current_phase() -> str:
+    """Read the current workflow phase from state file."""
     try:
-        if os.path.exists(STATE_FILE):
-            with open(STATE_FILE, "r") as f:
-                data = json.load(f)
-                return data.get("active", False)
-    except (json.JSONDecodeError, IOError):
-        pass
-    return False
+        with open(WORKFLOW_STATE_FILE) as f:
+            return json.load(f).get("phase", DEFAULT_PHASE)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return DEFAULT_PHASE
 
 
-def load_prompt(prompt_name: str) -> str:
-    """Load a prompt from the prompts directory."""
-    prompt_path = os.path.join(PROMPTS_DIR, f"{prompt_name}.md")
-    try:
-        with open(prompt_path, "r") as f:
-            return f.read().strip()
-    except (IOError, FileNotFoundError):
-        return ""
+def save_current_phase(phase: str) -> None:
+    """Persist the current workflow phase to state file."""
+    with open(WORKFLOW_STATE_FILE, "w") as f:
+        json.dump({"active": True, "phase": phase}, f, indent=2)
 
 
-def check_file(file_path: str, file_type: Literal["code", "plan"]) -> bool:
-    """Check if the file is an implementation plan file."""
-    if not file_path:
-        return False
-    # Match files ending with implementation-plan.md in session directories
-    return (
-        file_path.endswith(PLAN_FILE_NAME)
-        if file_type == "plan"
-        else file_path.endswith(CODE_EXTENSIONS)
-    )
+# =============================================================================
+# HOOK RESPONSES
+# =============================================================================
+
+def block_tool_use(reason: str) -> None:
+    """Block the tool call. Exit 2 sends reason to Claude via stderr."""
+    print(reason, file=sys.stderr)
+    sys.exit(2)
 
 
-def trigger_review(
-    file_path: str, review_type: Literal["research", "code", "plan"]
-) -> dict:
-    """Trigger research_reviewer to review after code file edits."""
-    context = load_prompt(f"{review_type}-review")
-    if context:
-        context = context.format(file_path=file_path)
-    else:
-        context = load_prompt("default-prompt")
-
-    return send_context(context)
+def allow_tool_use() -> None:
+    """Allow the tool call to proceed. Exit 0 = success."""
+    sys.exit(0)
 
 
-def validate_value(value: str | dict) -> str | dict:
-    try:
-        if value and isinstance(value, (str, dict)):
-            return json.loads(value)
-        else:
-            return {}
-    except json.JSONDecodeError:
-        return {}
+# =============================================================================
+# TOOL DETECTION
+# =============================================================================
+
+def is_source_code_file(file_path: str) -> bool:
+    """Check if file path has a source code extension."""
+    return file_path.endswith(SOURCE_CODE_EXTENSIONS)
 
 
-def extract_value(input_data: dict, value: str) -> any:
-    raw_value = input_data.get(value, "")
-    return validate_value(raw_value)
+def is_version_control_command(command: str) -> bool:
+    """Check if bash command is a git operation."""
+    return command.strip().startswith("git ")
 
+
+# =============================================================================
+# EVENT HANDLERS
+# =============================================================================
+
+def on_pre_tool_use(hook_input: dict) -> None:
+    """
+    PreToolUse Event Handler
+
+    Enforces workflow compliance rules:
+    1. Task tool → must use the agent assigned to current phase
+    2. Write/Edit → code files only in coding phases
+    3. Bash → git commands only in commit phase
+    """
+    current_phase = read_current_phase()
+    tool_name = hook_input.get("tool_name", "")
+    tool_params = hook_input.get("tool_input", {})
+
+    # Rule 1: Enforce agent assignment per phase
+    if tool_name == "Task":
+        requested_agent = tool_params.get("subagent_type", "")
+        required_agent = REQUIRED_AGENT_BY_PHASE.get(current_phase)
+
+        if required_agent and requested_agent != required_agent:
+            block_tool_use(
+                f"BLOCKED: Phase '{current_phase}' requires '{required_agent}' agent.\n"
+                f"Requested: '{requested_agent}'. Complete current phase first."
+            )
+
+    # Rule 2: Restrict code changes to coding phases
+    if tool_name in ("Write", "Edit"):
+        target_file = tool_params.get("file_path", "")
+
+        if is_source_code_file(target_file) and current_phase not in PHASES_ALLOWING_CODE_CHANGES:
+            block_tool_use(
+                f"BLOCKED: Cannot modify source code in '{current_phase}' phase.\n"
+                f"Code changes allowed in: {', '.join(PHASES_ALLOWING_CODE_CHANGES)}"
+            )
+
+    # Rule 3: Restrict git to commit phase
+    if tool_name == "Bash":
+        bash_command = tool_params.get("command", "")
+
+        if is_version_control_command(bash_command) and current_phase != "commit":
+            block_tool_use(
+                f"BLOCKED: Git commands only allowed in 'commit' phase.\n"
+                f"Current phase: '{current_phase}'"
+            )
+
+    allow_tool_use()
+
+
+def on_session_start(hook_input: dict) -> None:
+    """
+    SessionStart Event Handler
+
+    Resets workflow to initial phase.
+    """
+    save_current_phase(DEFAULT_PHASE)
+    sys.exit(0)
+
+
+# =============================================================================
+# ENTRY POINT
+# =============================================================================
 
 def main():
-    try:
-        input_data = json.load(sys.stdin)
+    """Dispatch based on CLI argument: 'pre' or 'init'."""
+    event_type = sys.argv[1] if len(sys.argv) > 1 else "pre"
+    hook_input = json.load(sys.stdin)
 
-        # Only run if /implement is active
-        ## if not is_implement_active():
-        ## sys.exit(0)
-
-        # Get tool input
-        tool_input = extract_value(input_data, "tool_input")
-
-        # Get tool response
-        tool_response = extract_value(input_data, "tool_response")
-
-        # Get tool name
-        tool_name = input_data.get("tool_name", "")
-
-        # Check for Write tool - triggers based on file written
-        if tool_name in ("Write", "MultiEdit", "Edit"):
-            file_path = tool_response.get("file_path", "")
-
-            # Check if implementation plan was written -> trigger plan review
-            if check_file(file_path, "plan"):
-                output = trigger_review(file_path, "plan")
-                print(json.dumps(output))
-                sys.exit(0)
-
-            # Check if code file was written -> trigger code review
-            if check_file(file_path, "code"):
-                output = trigger_review(file_path, "code")
-                print(json.dumps(output))
-                sys.exit(0)
-
-        # No matching trigger
-        sys.exit(0)
-
-    except Exception as e:
-        print(f"Implement hook error: {e}", file=sys.stderr)
-        sys.exit(0)
+    if event_type == "init":
+        on_session_start(hook_input)
+    else:
+        on_pre_tool_use(hook_input)
 
 
 if __name__ == "__main__":

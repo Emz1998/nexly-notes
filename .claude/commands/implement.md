@@ -3,7 +3,6 @@ name: implement
 description: Build a production-ready feature with thorough planning and structured context gathering
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, AskUserQuestion, WebSearch, WebFetch
 argument-hint: Build a <feature> that will <functionality>
-model: sonnet
 ---
 
 **Goal**: Implement task(s) from `@specs/tasks.md` following the EPIC workflow (Explore, Plan, Implement, Commit)

@@ -1,4 +1,4 @@
 {
- "active": true,
- "iteration": true
+  "active": true,
+  "phase": "explore"
 }
