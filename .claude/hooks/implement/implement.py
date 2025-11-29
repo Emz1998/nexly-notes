@@ -12,6 +12,7 @@ This replaces skill-based triggering with hook-based deterministic triggers.
 import json
 import os
 import sys
+from typing import Literal
 
 # Paths
 HOOK_DIR = os.path.dirname(__file__)
@@ -23,6 +24,16 @@ PLAN_FILE_NAME = "implementation-plan.md"
 
 # Code file extensions that trigger code review
 CODE_EXTENSIONS = (".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css")
+
+
+## Send context to Claude
+def send_context(context: str, hook_event: str = "PostToolUse") -> dict:
+    return {
+        "hookSpecificOutput": {
+            "hookEventName": hook_event,
+            "additionalContext": context,
+        }
+    }
 
 
 def is_implement_active() -> bool:
@@ -47,42 +58,44 @@ def load_prompt(prompt_name: str) -> str:
         return ""
 
 
-def is_plan_file(file_path: str) -> bool:
+def check_file(file_path: str, file_type: Literal["code", "plan"]) -> bool:
     """Check if the file is an implementation plan file."""
     if not file_path:
         return False
     # Match files ending with implementation-plan.md in session directories
-    return file_path.endswith(PLAN_FILE_NAME)
+    return (
+        file_path.endswith(PLAN_FILE_NAME)
+        if file_type == "plan"
+        else file_path.endswith(CODE_EXTENSIONS)
+    )
 
 
-def trigger_plan_review(file_path: str) -> dict:
-    """Trigger plan-consultant review after implementation plan is written."""
-    context = load_prompt("plan-review")
-    if not context:
-        context = f"The strategic-planner has written the implementation plan to {file_path}. Call the plan-consultant agent to review this implementation strategy. Ask for a rating on a scale of 1 to 10."
-
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": "PostToolUse",
-            "additionalContext": context,
-        }
-    }
-
-
-def trigger_code_review(file_path: str) -> dict:
-    """Trigger code-reviewer review after code file edits."""
-    context = load_prompt("code-review")
+def trigger_review(
+    file_path: str, review_type: Literal["research", "code", "plan"]
+) -> dict:
+    """Trigger research_reviewer to review after code file edits."""
+    context = load_prompt(f"{review_type}-review")
     if context:
         context = context.format(file_path=file_path)
     else:
-        context = f"Call the code-reviewer agent to review the file {file_path}. Ask for a rating on a scale of 1 to 10."
+        context = load_prompt("default-prompt")
 
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": "PostToolUse",
-            "additionalContext": context,
-        }
-    }
+    return send_context(context)
+
+
+def validate_value(value: str | dict) -> str | dict:
+    try:
+        if value and isinstance(value, (str, dict)):
+            return json.loads(value)
+        else:
+            return {}
+    except json.JSONDecodeError:
+        return {}
+
+
+def extract_value(input_data: dict, value: str) -> any:
+    raw_value = input_data.get(value, "")
+    return validate_value(raw_value)
 
 
 def main():
@@ -90,62 +103,31 @@ def main():
         input_data = json.load(sys.stdin)
 
         # Only run if /implement is active
-        if not is_implement_active():
-            sys.exit(0)
+        ## if not is_implement_active():
+        ## sys.exit(0)
 
+        # Get tool input
+        tool_input = extract_value(input_data, "tool_input")
+
+        # Get tool response
+        tool_response = extract_value(input_data, "tool_response")
+
+        # Get tool name
         tool_name = input_data.get("tool_name", "")
-        tool_input = input_data.get("tool_input", {})
-        tool_response = input_data.get("tool_response", {})
-
-        # Parse tool_input if string
-        if isinstance(tool_input, str):
-            try:
-                tool_input = json.loads(tool_input) if tool_input else {}
-            except json.JSONDecodeError:
-                tool_input = {}
-
-        # Parse tool_response if string
-        if isinstance(tool_response, str):
-            try:
-                tool_response = json.loads(tool_response) if tool_response else {}
-            except json.JSONDecodeError:
-                tool_response = {}
 
         # Check for Write tool - triggers based on file written
-        if tool_name == "Write":
-            file_path = ""
-
-            # Get file path from tool_input or tool_response
-            if isinstance(tool_input, dict):
-                file_path = tool_input.get("file_path", "")
-            if not file_path and isinstance(tool_response, dict):
-                file_path = tool_response.get("filePath", "")
+        if tool_name in ("Write", "MultiEdit", "Edit"):
+            file_path = tool_response.get("file_path", "")
 
             # Check if implementation plan was written -> trigger plan review
-            if is_plan_file(file_path):
-                output = trigger_plan_review(file_path)
+            if check_file(file_path, "plan"):
+                output = trigger_review(file_path, "plan")
                 print(json.dumps(output))
                 sys.exit(0)
 
             # Check if code file was written -> trigger code review
-            if file_path and file_path.endswith(CODE_EXTENSIONS):
-                output = trigger_code_review(file_path)
-                print(json.dumps(output))
-                sys.exit(0)
-
-        # Check for Edit/MultiEdit tool - code file edits trigger code review
-        if tool_name in ("Edit", "MultiEdit"):
-            file_path = ""
-
-            # Get file path from tool_input or tool_response
-            if isinstance(tool_input, dict):
-                file_path = tool_input.get("file_path", "")
-            if not file_path and isinstance(tool_response, dict):
-                file_path = tool_response.get("filePath", "")
-
-            # Only trigger for code files
-            if file_path and file_path.endswith(CODE_EXTENSIONS):
-                output = trigger_code_review(file_path)
+            if check_file(file_path, "code"):
+                output = trigger_review(file_path, "code")
                 print(json.dumps(output))
                 sys.exit(0)
 

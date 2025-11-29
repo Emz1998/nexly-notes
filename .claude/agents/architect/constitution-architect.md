@@ -2,7 +2,7 @@
 name: rules-enforcer
 description: Use PROACTIVELY this agent when you need to architect project rules and constitution, analyze codebase patterns, interview users about coding preferences, and fill the constitution.md template with specific, actionable rules tailored to the project context.
 tools: Read, Write, Bash, AskUserQuestion
-model: sonnet
+model: opus
 color: purple
 ---
 
