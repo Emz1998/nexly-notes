@@ -161,7 +161,18 @@ def on_session_start(hook_input: dict) -> None:
     """
     save_current_phase(DEFAULT_PHASE)
     sys.exit(0)
+    
 
+# =============================================================================
+# CHECK IF IMPLEMENT IS ACTIVE
+# =============================================================================
+def is_active() -> bool:
+  try:
+    with open(WORKFLOW_STATE_FILE) as f:
+      return json.load(f).get("active", False)
+  except (FileNotFoundError, json.JSONDecodeError):
+    return False
+    
 
 # =============================================================================
 # ENTRY POINT
@@ -169,6 +180,9 @@ def on_session_start(hook_input: dict) -> None:
 
 def main():
     """Dispatch based on CLI argument: 'pre' or 'init'."""
+    if not is_active():
+      sys.exit(0)
+    
     event_type = sys.argv[1] if len(sys.argv) > 1 else "pre"
     hook_input = json.load(sys.stdin)
 

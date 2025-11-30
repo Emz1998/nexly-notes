@@ -1,23 +1,92 @@
-# Dependency Auditor
+# Task: Create a Claude Custom Hook for Phase Validation
 
-**Tools to use:** Read, Grep, Bash, WebSearch
+## Objective
+
+Build a custom hook that prevents workflow phases from proceeding until their required tasks are completed. The hook validates phase completion by checking for the existence of specific deliverables.
+
+## Context
+
+- Phase state is stored in `.claude/hooks/implement/state.json`
+- The hook should use the `PostToolUse` event to perform validation
+- Different phases have different completion requirements
 
 ---
 
-**Role Description/Persona:**
+## Phase Completion Requirements
 
-You are a meticulous dependency auditor and code compatibility analyst specializing in identifying outdated libraries, deprecated APIs, and version mismatches across modern tech stacks. You systematically analyze dependency files (package.json, requirements.txt, Gemfile, go.mod, etc.), run package manager audit commands to detect outdated packages, and cross-reference findings with official documentation and release notes to identify breaking changes or security vulnerabilities. You excel at spotting deprecated code patterns, sunset APIs, and incompatible version combinations that could introduce bugs, security risks, or runtime errors. Your analysis is thorough and methodical—you scan the entire codebase for usage of flagged dependencies, check compatibility matrices between major frameworks, and produce clear, prioritized reports distinguishing between critical updates (security patches), major version upgrades (breaking changes), and minor updates (safe to upgrade). You do not fix or update code; you investigate, document, and recommend.
+### Documentation Phases
+
+Each documentation phase requires a specific markdown file to exist:
+
+| Phase | Required File |
+|-------|---------------|
+| Explore | `codebase-status.md` |
+| Research | `research-report.md` |
+| Research Consult | `research-report-feedback.md` |
+| Plan | `implementation-plan.md` |
+| Plan Consult | `implementation-plan-feedback.md` |
+
+**Validation Method:** Use `PostToolUse` to check if the required markdown file exists in the expected location.
+
+### Coding Phase
+
+Applies to code files (`.py`, `.js`, `.ts`, `.test.*`, and similar extensions).
+
+**Validation Methods (choose one or combine):**
+
+1. **Timestamp Check:** Compare file modification timestamps against phase start time
+2. **Git Status Check:** Use subprocess to run `git status` and verify new/modified code files
+
+### Code Review & Refactoring Phases
+
+These phases require detecting changes to existing files.
+
+**Validation Methods (choose one or combine):**
+
+1. **File Open Flag:** Track whether relevant files were opened during the phase
+2. **Timestamp + Git Comparison:**
+   - Record the timestamp when the phase state changes
+   - Use `git status` (via subprocess) to detect modifications after this timestamp
+
+### Commit Phase
+
+**Validation Method:** Use subprocess to check `git status` for uncommitted changes, or verify that a new commit was created.
 
 ---
 
-**Guardrails:**
+## Implementation Guidelines
 
-- **No Code Modification**: Never write, edit, or update any code files, dependency files, or configuration. Your role is strictly investigative and advisory.
+<guidelines>
 
-- **Verify Before Reporting**: Always cross-reference version information with official sources (npm registry, PyPI, official docs) via WebSearch before flagging something as outdated. Do not rely solely on cached or potentially stale information.
+1. **Hook Event:** Use `PostToolUse` as the primary trigger for validation checks
 
-- **Scope Boundaries**: Focus exclusively on dependency versions, deprecated API usage, and tech stack compatibility. Do not expand into code quality, performance optimization, or architectural concerns unless they directly relate to version incompatibility.
+2. **State Reference:** Read current phase from `.claude/hooks/implement/state.json`
 
-- **Prioritized Reporting**: Categorize findings by severity—Critical (security vulnerabilities, EOL packages), High (major version behind with breaking changes), Medium (minor/patch updates available), Low (informational deprecation warnings). Never present a flat list without prioritization.
+3. **Subprocess Usage:** For git operations, use subprocess to execute:
+   - `git status` for detecting changes
+   - `git log` for verifying commits
 
-- **Minimal Command Execution**: When using Bash, limit commands to read-only operations such as `npm outdated`, `pip list --outdated`, version checks, and audit commands. Never run install, update, or modification commands.
+4. **Blocking Behavior:** When validation fails, the hook should prevent phase transition and provide a clear message indicating what task remains incomplete
+
+5. **File Existence Checks:** For documentation phases, verify the required markdown file exists before allowing progression
+
+</guidelines>
+
+---
+
+## Decision Points for Implementation
+
+Please determine the optimal approach for each phase type:
+
+1. **Coding Phase:** Should we use timestamp checks, git status, or both?
+2. **Code Review/Refactoring:** Which combination of flag tracking and timestamp/git comparison works best?
+3. **Error Handling:** How should the hook respond when validation fails?
+
+## Expected Deliverable
+
+A functional Claude custom hook that:
+- Monitors phase state from `.claude/hooks/implement/state.json`
+- Validates completion requirements for each phase type
+- Blocks phase transitions when requirements are not met
+- Provides informative feedback about incomplete tasks
+- Save this new hook in .claude/hooks/implement/phase-completion-check.py
