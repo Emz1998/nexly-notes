@@ -1,13 +1,9 @@
-from .switch_mode import switch_to_plan_mode
+from .validate_plan import validate_plan
 from .activate import activate_plan_mode
 from .deactivate import deactivate
-from .cache_manager import load_cache, set_cache
-
 
 __all__ = [
-    "switch_to_plan_mode",
+    "validate_plan",
     "activate_plan_mode",
     "deactivate",
-    "load_cache",
-    "set_cache",
 ]

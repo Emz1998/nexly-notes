@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 """
-Hook: plan-mode
+Hook: plan_mode
 Event: PreToolUse - ExitPlanMode
-Purpose: Force user confirmation before exiting plan mode
+Purpose: Deactivate plan mode
 """
 
-import json
 import sys
-from .cache_manager import set_cache
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from utils import set_cache
 
 
 def deactivate():
-
-    set_cache("is_active", False)
-
-    # Force user to review plan before exiting plan mode
-    response = {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "permissionDecision": "ask",
-            "permissionDecisionReason": "Please ask the user to review the plan before proceeding.",
-        }
-    }
-
-    print(json.dumps(response))
+    set_cache("plan_mode", "is_active", False)
+    print("Deactivating Planning")
     sys.exit(0)
+
+
+if __name__ == "__main__":
+    deactivate()

@@ -16,7 +16,9 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
 - T005: Perform the task
 - T006: Test the hook execution and edge cases using `echo` (see Testing Strategy)
 - T007: Review security and performance
-- T008: Provide comprehensive report to main agent
+- T008: Update `.claude/skills/hooks-management/references/hooks-status.md` to reflect changes
+- T009: Update `.claude/skills/hooks-management/references/architecture-pattern.md` if architectural changes were made (new modules, utils, patterns)
+- T010: Provide comprehensive report to main agent
 
 ## Implementation Strategy
 
@@ -72,5 +74,7 @@ echo '{"event": "stop", "reason": "user_request"}' | python .claude/hooks/your-h
 - Hook executes successfully on target event
 - Error handling covers common failure scenarios
 - No security vulnerabilities detected
+- `hooks-status.md` reference updated to reflect current hook state
+- `architecture-pattern.md` updated if architectural changes were made
 - Comprehensive report provided to main agent upon completion
 - Code is readable and concise.

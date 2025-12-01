@@ -1,2 +1,0 @@
-Hook test triggered at: 2025-11-30
-This file was created to test the Write tool hook.

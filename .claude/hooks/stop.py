@@ -1,10 +1,4 @@
 from plan_mode import validate_plan # type: ignore
 
-def main():
-
-    print("Planning Phase")
-    validate_plan()
-
-
 if __name__ == "__main__":
-    main()
+    validate_plan()
