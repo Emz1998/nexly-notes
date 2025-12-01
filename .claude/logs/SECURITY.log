@@ -32,6 +32,69 @@
 
 
 
+
+### 2025-11-30
+
+- 23:07:24 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan_mode/switch_mode.py | Edit | 56cb2114-d873-4086-91da-1a2b1f1c708a | 0 | none | 0.14ms | 0
+- 22:47:31 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode-hook.md | Edit | bf36b5cf-4580-44e6-9423-3578569ecad6 | 0 | none | 0.18ms | 0
+- 22:47:19 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/plans/ 2>&1 || echo "Directory does not exist" | Bash | bf36b5cf-4580-44e6-9423-3578569ecad6 | 0 | none | 0.19ms | 0
+- 22:44:31 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook-plan.md | Write | 8c5f1e96-03d2-4701-8144-4e1da849d1ae | 0 | none | 0.18ms | 0
+- 22:41:19 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/plans/ | Bash | 58335afe-c3b1-468e-a188-08cee730b121 | 0 | none | 13.2ms | 0
+- 22:38:01 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/plans/ | Bash | d4f68d61-424b-4661-87b7-d142c0238a42 | 0 | none | 15.08ms | 0
+- 22:34:46 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode-hook.md | Write | 98adaf77-f9bf-4b17-a1f5-03742bad54f4 | 0 | none | 0.21ms | 0
+- 22:32:37 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode.md | Write | 7ab0a157-98e3-4748-aa20-30448cb30a12 | 0 | none | 4.52ms | 0
+- 22:23:12 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook.md | Write | 20e49c3d-ab22-4b84-925a-018f1193ad15 | 0 | none | 59.69ms | 0
+- 22:19:05 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook-plan.md | Write | 773bf49d-f065-428e-b074-9a2a27bbd01b | 0 | none | 3.89ms | 0
+- 22:18:26 | Access | ALLOWED - LOW RISK | echo '{"is_active": false}' > /home/emhar/nexly-notes/.claude/hooks/plan_mode/cache.json | Bash | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 15.53ms | 0
+- 22:18:21 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "ExitPlanMode", "tool_input": {}}' | python3 /home/emhar/nexly-notes/.claude/... | Bash | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 10.65ms | 0
+- 22:18:17 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "Edit", "tool_input": {"file_path": ".claude/plans/test.md", "old_string": "t... | Bash | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 14.37ms | 0
+- 22:18:11 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "Edit", "tool_input": {"file_path": ".claude/settings.local.json", "old_strin... | Bash | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 10.75ms | 0
+- 22:17:59 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/settings.local.json | Edit | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 30.61ms | 0
+- 22:17:44 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan_mode/switch_mode.py | Write | b2f76145-cc7f-447e-bd0c-3b443d976410 | 0 | none | 20.91ms | 0
+- 22:15:12 | Access | ALLOWED - LOW RISK | echo 'invalid json' | python3 .claude/hooks/plan_mode/switch_mode.py 2>&1; echo "Exit code: $?" | Bash | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 68.54ms | 0
+- 22:15:11 | Access | ALLOWED - LOW RISK | echo '{}' | python3 .claude/hooks/plan_mode/switch_mode.py 2>&1; echo "Exit code: $?" | Bash | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 37.3ms | 0
+- 22:15:10 | Access | ALLOWED - LOW RISK | echo '{"hook_event_name": "PreToolUse", "tool_name": "ExitPlanMode", "tool_input": {}, "permissio... | Bash | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 187.99ms | 0
+- 22:15:10 | Access | ALLOWED - LOW RISK | echo '{"hook_event_name": "PreToolUse", "tool_name": "ExitPlanMode", "tool_input": {}, "permissio... | Bash | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 33.01ms | 0
+- 22:15:01 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan_mode/switch_mode.py | Edit | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 47.81ms | 0
+- 22:14:25 | Access | ALLOWED - LOW RISK | echo '{"hook_event_name": "PreToolUse", "tool_name": "ExitPlanMode", "tool_input": {}}' | python3... | Bash | 2dcb5e58-19d1-49f9-8929-27127356012c | 0 | none | 20.65ms | 0
+- 22:11:10 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook.md | Write | 35542e5c-7005-4aff-ad3e-21a55ea06057 | 0 | none | 6.47ms | 0
+- 22:10:43 | Access | ALLOWED - LOW RISK | mkdir -p /home/emhar/nexly-notes/.claude/plans | Bash | 577a6361-112d-4d9e-abed-2526dab517ed | 0 | none | 5.04ms | 0
+- 22:09:38 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode.md | Write | 578b5a12-e003-46be-a261-e631a9c9f6d6 | 0 | none | 3.98ms | 0
+- 22:07:23 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode-hook.md | Write | 499f7ef4-120e-4fbe-b92b-f7b01a392232 | 0 | none | 23.54ms | 0
+- 22:06:37 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/plans/ | Bash | 82087e1c-3211-4783-b991-7661c086ee69 | 0 | none | 18.7ms | 0
+- 22:04:54 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode.md | Write | 9e6cb044-b89d-4887-9f65-b13c3bfd3016 | 0 | none | 8.56ms | 0
+- 21:59:27 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook.md | Write | b064ab2d-742d-46b0-ae34-f251b3558dbf | 0 | none | 4.12ms | 0
+- 21:50:58 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/test-output.txt | Write | 60cbd34f-ad93-491c-8af0-b0e3915159f4 | 0 | none | 3.33ms | 0
+- 21:49:35 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-write-tool.md | Write | c27662ea-34d7-4b4a-9e8d-6b0152401722 | 0 | none | 0.14ms | 0
+- 21:42:29 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-hook-plan.md | Write | c27662ea-34d7-4b4a-9e8d-6b0152401722 | 0 | none | 5.16ms | 0
+- 21:31:58 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/test-exit-plan-mode.md | Write | 588a05dd-50da-4489-9e08-93165b8b44cc | 0 | none | 0.18ms | 0
+- 21:29:57 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/plans/exit-plan-mode-test.md | Write | e8646b2d-04b4-4b9e-8cf2-8285deaa792b | 0 | none | 0.16ms | 0
+- 21:26:51 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/project/plans/tictactoe-implementation-plan.md | Write | 29de01be-4936-4826-ad7d-e369cf75c8b3 | 0 | none | 0.27ms | 0
+- 21:19:49 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/hooks/plan_mode/ | Bash | 539f8157-7164-4c14-b20a-4de01a357ccd | 0 | none | 0.17ms | 0
+- 21:19:46 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/hooks/ | Bash | 539f8157-7164-4c14-b20a-4de01a357ccd | 0 | none | 0.19ms | 0
+- 21:19:34 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/project/tictactoe-plan.md | Write | 539f8157-7164-4c14-b20a-4de01a357ccd | 0 | none | 3.69ms | 0
+- 21:18:48 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/src/components/ | Bash | 539f8157-7164-4c14-b20a-4de01a357ccd | 0 | none | 37.44ms | 0
+- 21:18:34 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/ | Bash | 539f8157-7164-4c14-b20a-4de01a357ccd | 0 | none | 39.36ms | 0
+- 21:12:04 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "ExitPlanMode"}' | python3 .claude/hooks/pre_tool_use.py | Bash | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 0.17ms | 0
+- 21:12:00 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan_mode/cache_manager.py | Edit | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 0.19ms | 0
+- 21:11:46 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "ExitPlanMode"}' | python3 .claude/hooks/pre_tool_use.py | Bash | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 1.01ms | 0
+- 21:11:37 | Access | ALLOWED - LOW RISK | echo '{"tool_name": "TodoWrite"}' | python3 .claude/hooks/pre_tool_use.py | Bash | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 0.43ms | 0
+- 21:11:00 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan_mode/switch_mode.py | Edit | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 0.65ms | 0
+- 21:09:56 | Access | ALLOWED - LOW RISK | npm run dev 2>&1 | head -100 | Bash | 1335b075-b42d-41a3-a5d7-7419395c3e97 | 0 | none | 0.15ms | 0
+- 20:24:30 | Access | ALLOWED - LOW RISK | find /home/emhar/nexly-notes/.claude/hooks -name "*.py" -type f | head -30 | Bash | 109e7196-1028-4b55-b0ae-5de68fb8e604 | 0 | none | 25.22ms | 0
+- 20:24:25 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/hooks/ | Bash | 109e7196-1028-4b55-b0ae-5de68fb8e604 | 0 | none | 6.98ms | 0
+- 19:43:28 | Access | ALLOWED - LOW RISK | echo '{"hook_event_name": "PreToolUse", "tool_name": "Write", "tool_input": {}}' | python3 /home/... | Bash | 6fabfb59-75f3-4be8-a9e7-beb7bf74330c | 0 | none | 0.33ms | 0
+- 19:43:23 | Access | ALLOWED - LOW RISK | echo '{"hook_event_name": "PreToolUse", "tool_name": "ExitPlanMode", "tool_input": {}}' | python3... | Bash | 6fabfb59-75f3-4be8-a9e7-beb7bf74330c | 0 | none | 0.16ms | 0
+- 19:43:18 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/settings.local.json | Edit | 6fabfb59-75f3-4be8-a9e7-beb7bf74330c | 0 | none | 0.16ms | 0
+- 19:43:11 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/.claude/hooks/plan-mode.py | Write | 6fabfb59-75f3-4be8-a9e7-beb7bf74330c | 0 | none | 0.18ms | 0
+- 19:16:29 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/hooks/implement/ | Bash | 32f2a41c-2b7b-4291-90d4-33faa8c65e02 | 0 | none | 0.14ms | 0
+- 19:09:26 | Access | ALLOWED - LOW RISK | ls -la /home/emhar/nexly-notes/.claude/hooks/implement/utils/ /home/emhar/nexly-notes/.claude/hoo... | Bash | 61fce090-62e2-4a6b-8477-831334ca0f1d | 0 | none | 0.2ms | 0
+- 18:30:21 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/specs/tasks.md | Edit | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 0.93ms | 0
+- 18:30:16 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/specs/tasks.md | Edit | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 0.34ms | 0
+- 18:30:08 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/specs/tasks.md | Edit | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 0.3ms | 0
+- 18:29:49 | Access | ALLOWED - LOW RISK | /home/emhar/.claude/plans/nifty-gliding-allen.md | Write | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 4.44ms | 0
+- 18:19:10 | Access | ALLOWED - LOW RISK | rm /home/emhar/nexly-notes/specs/app-vision.md | Bash | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 0.39ms | 0
+- 18:19:01 | Access | ALLOWED - LOW RISK | /home/emhar/nexly-notes/specs/nexly-business-plan.md | Write | 9591627b-245c-459d-bf3f-dc0ee3244ae9 | 0 | none | 0.91ms | 0
 ### 2025-11-26
 
 - 03:32:14 | Access | ALLOWED - LOW RISK | echo '{"active": false}' > /home/emhar/nexly-rn/.claude/hooks/implement/implement-active.json | Bash | 16aa7d99-8b3b-48fd-bf8b-e9b08f10aed0 | 0 | none | 0.38ms | 0

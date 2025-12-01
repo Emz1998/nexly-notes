@@ -28,8 +28,10 @@
 
 **Notation Guide:**
 
-- [P] for Parallel Tasks - task has NO dependencies on other tasks in same sprint
+- [P] for Parallel Tasks - task has NO dependencies on other tasks in same milestone
 - Tasks without [P] have dependencies on previous tasks
+- MS-[NNN]: Milestone Number (e.g. MS-001)
+- T[NNN]: Task Number (e.g. T001)
 
 ---
 
@@ -37,7 +39,7 @@
 
 **CRITICAL: This phase establishes the development environment and core type system. All subsequent phases depend on successful completion.**
 
-#### **SPRINT-001:** Environment Setup (Week 1)
+#### **MS-001:** Environment Setup (Week 1)
 
 **Goal:** Next.js 15 + React 19 development environment fully configured with Firebase, Stripe, and PWA support
 
@@ -70,7 +72,7 @@
 
 ---
 
-#### **SPRINT-002:** Firebase & Authentication Setup (Week 1)
+#### **MS-002:** Firebase & Authentication Setup (Week 1)
 
 **Goal:** Firebase project configured with Auth and Firestore, authentication flows implemented
 
@@ -103,7 +105,7 @@
 
 ---
 
-#### **SPRINT-003:** Core Type Definitions (Week 1)
+#### **MS-003:** Core Type Definitions (Week 1)
 
 **Goal:** Define TypeScript interfaces and Zod validation schemas for all data models
 
@@ -138,7 +140,7 @@
 
 ### Phase 2: Core Editor & AI (Week 2)
 
-#### **SPRINT-004:** Tiptap Editor Integration
+#### **MS-004:** Tiptap Editor Integration
 
 **Goal:** Rich text editor with auto-save, formatting toolbar, and distraction-free UI
 
@@ -170,7 +172,7 @@
 
 ---
 
-#### **SPRINT-005:** Auto-Save & Local Storage
+#### **MS-005:** Auto-Save & Local Storage
 
 **Goal:** Implement 30-second auto-save to IndexedDB with visual feedback
 
@@ -199,7 +201,7 @@
 
 ---
 
-#### **SPRINT-006:** Slash Command System
+#### **MS-006:** Slash Command System
 
 **Goal:** Implement /template and /formula slash commands with floating menu
 
@@ -232,7 +234,7 @@
 
 ---
 
-#### **SPRINT-007:** AI Autocomplete Integration
+#### **MS-007:** AI Autocomplete Integration
 
 **Goal:** Implement GPT-4.1 nano autocomplete with dictionary fallback
 
@@ -271,7 +273,7 @@
 
 ### Phase 3: Note Management & Sync (Week 3)
 
-#### **SPRINT-008:** Note CRUD Operations
+#### **MS-008:** Note CRUD Operations
 
 **Goal:** Complete note library with create, read, update, delete functionality
 
@@ -304,7 +306,7 @@
 
 ---
 
-#### **SPRINT-009:** Note Organization
+#### **MS-009:** Note Organization
 
 **Goal:** Implement category filtering, search, and sorting
 
@@ -333,7 +335,7 @@
 
 ---
 
-#### **SPRINT-010:** Trash System
+#### **MS-010:** Trash System
 
 **Goal:** Implement trash folder with 30-day recovery and permanent deletion
 
@@ -362,7 +364,7 @@
 
 ---
 
-#### **SPRINT-011:** Offline Sync & Conflict Resolution
+#### **MS-011:** Offline Sync & Conflict Resolution
 
 **Goal:** Implement Firestore sync with offline queue and last-write-wins conflict resolution
 
@@ -397,7 +399,7 @@
 
 ### Phase 4: Payment & Polish (Week 4)
 
-#### **SPRINT-012:** Stripe Integration
+#### **MS-012:** Stripe Integration
 
 **Goal:** Implement Pro tier subscription with Stripe checkout, webhooks, and customer portal
 
@@ -432,7 +434,7 @@
 
 ---
 
-#### **SPRINT-013:** Onboarding Flow
+#### **MS-013:** Onboarding Flow
 
 **Goal:** Implement 2-screen onboarding introducing AI autocomplete and slash commands
 
@@ -462,7 +464,7 @@
 
 ---
 
-#### **SPRINT-014:** Export Functionality
+#### **MS-014:** Export Functionality
 
 **Goal:** Implement note export to Markdown, Plain Text, and bulk ZIP
 
@@ -490,7 +492,7 @@
 
 ---
 
-#### **SPRINT-015:** Settings Page
+#### **MS-015:** Settings Page
 
 **Goal:** Complete settings page with account, subscription, preferences, and data sections
 
@@ -520,7 +522,7 @@
 
 ---
 
-#### **SPRINT-016:** Responsive Design & Dark Mode
+#### **MS-016:** Responsive Design & Dark Mode
 
 **Goal:** Ensure responsive design across all breakpoints and complete dark mode support
 
@@ -551,7 +553,7 @@
 
 ---
 
-#### **SPRINT-017:** Accessibility
+#### **MS-017:** Accessibility
 
 **Goal:** Achieve WCAG AA compliance with keyboard navigation and screen reader support
 
@@ -584,7 +586,7 @@
 
 ### Phase 5: Testing & Deployment
 
-#### **SPRINT-018:** Testing Suite
+#### **MS-018:** Testing Suite
 
 **Goal:** Comprehensive test coverage for critical paths
 
@@ -616,7 +618,7 @@
 
 ---
 
-#### **SPRINT-019:** Performance Optimization
+#### **MS-019:** Performance Optimization
 
 **Goal:** Meet all Core Web Vitals and performance targets
 
@@ -646,7 +648,7 @@
 
 ---
 
-#### **SPRINT-020:** Deployment & Monitoring
+#### **MS-020:** Deployment & Monitoring
 
 **Goal:** Deploy to Vercel with monitoring, error tracking, and cost alerts
 
@@ -680,27 +682,27 @@
 
 ## Dependencies and Execution Order
 
-**Sprint Dependencies:**
+**Milestone Dependencies:**
 
-- SPRINT-002 depends on SPRINT-001 (Firebase requires initialized project)
-- SPRINT-003 depends on SPRINT-001 (Types require TypeScript setup)
-- SPRINT-004 depends on SPRINT-003 (Editor needs types defined)
-- SPRINT-005 depends on SPRINT-003 and SPRINT-004 (Auto-save needs Dexie types and editor)
-- SPRINT-006 depends on SPRINT-004 (Slash commands are Tiptap extension)
-- SPRINT-007 depends on SPRINT-002 and SPRINT-006 (AI needs auth and editor)
-- SPRINT-008 depends on SPRINT-005 (CRUD needs local storage)
-- SPRINT-009 depends on SPRINT-008 (Organization needs note library)
-- SPRINT-010 depends on SPRINT-008 (Trash needs note CRUD)
-- SPRINT-011 depends on SPRINT-005 and SPRINT-008 (Sync needs local storage and CRUD)
-- SPRINT-012 depends on SPRINT-002 and SPRINT-007 (Stripe needs auth and AI quota)
-- SPRINT-013 depends on SPRINT-006 (Onboarding demos slash commands)
-- SPRINT-014 depends on SPRINT-008 (Export needs note CRUD)
-- SPRINT-015 depends on SPRINT-012 (Settings shows subscription)
-- SPRINT-016 depends on SPRINT-004 through SPRINT-015 (Responsive applies to all)
-- SPRINT-017 depends on SPRINT-016 (Accessibility on final components)
-- SPRINT-018 depends on all feature sprints (Tests verify features)
-- SPRINT-019 depends on SPRINT-018 (Optimize after tests pass)
-- SPRINT-020 depends on SPRINT-019 (Deploy optimized build)
+- MS-002 depends on MS-001 (Firebase requires initialized project)
+- MS-003 depends on MS-001 (Types require TypeScript setup)
+- MS-004 depends on MS-003 (Editor needs types defined)
+- MS-005 depends on MS-003 and MS-004 (Auto-save needs Dexie types and editor)
+- MS-006 depends on MS-004 (Slash commands are Tiptap extension)
+- MS-007 depends on MS-002 and MS-006 (AI needs auth and editor)
+- MS-008 depends on MS-005 (CRUD needs local storage)
+- MS-009 depends on MS-008 (Organization needs note library)
+- MS-010 depends on MS-008 (Trash needs note CRUD)
+- MS-011 depends on MS-005 and MS-008 (Sync needs local storage and CRUD)
+- MS-012 depends on MS-002 and MS-007 (Stripe needs auth and AI quota)
+- MS-013 depends on MS-006 (Onboarding demos slash commands)
+- MS-014 depends on MS-008 (Export needs note CRUD)
+- MS-015 depends on MS-012 (Settings shows subscription)
+- MS-016 depends on MS-004 through MS-015 (Responsive applies to all)
+- MS-017 depends on MS-016 (Accessibility on final components)
+- MS-018 depends on all feature milestones (Tests verify features)
+- MS-019 depends on MS-018 (Optimize after tests pass)
+- MS-020 depends on MS-019 (Deploy optimized build)
 
 **Critical Path:**
 
@@ -712,18 +714,18 @@ T001 → T011 → T021 → T033 → T043 → T060 → T073 → T097 → T107 →
 
 ## Parallel Opportunities
 
-**Parallel Sprints:**
+**Parallel Milestones:**
 
-- SPRINT-001, SPRINT-002, SPRINT-003 can have some parallel work (different domains)
-- SPRINT-008, SPRINT-009, SPRINT-010 can be parallelized (different note management features)
-- SPRINT-013, SPRINT-014 can run in parallel (independent features)
+- MS-001, MS-002, MS-003 can have some parallel work (different domains)
+- MS-008, MS-009, MS-010 can be parallelized (different note management features)
+- MS-013, MS-014 can run in parallel (independent features)
 
-**Parallel Tasks Within Sprint:**
+**Parallel Tasks Within Milestone:**
 
-- T001, T002, T003 (SPRINT-001 setup tasks)
-- T021, T022, T023, T024 (SPRINT-003 type definitions)
-- T141, T142 (SPRINT-016 responsive and dark mode base)
-- T150, T151 (SPRINT-017 accessibility base)
+- T001, T002, T003 (MS-001 setup tasks)
+- T021, T022, T023, T024 (MS-003 type definitions)
+- T141, T142 (MS-016 responsive and dark mode base)
+- T150, T151 (MS-017 accessibility base)
 
 **Resource Allocation:**
 
@@ -735,17 +737,19 @@ T001 → T011 → T021 → T033 → T043 → T060 → T073 → T097 → T107 →
 
 ## Implementation Strategy
 
-1. **Week 1 Priority:** Complete SPRINT-001 through SPRINT-003 (foundation)
-2. **Week 2 Priority:** Complete SPRINT-004 through SPRINT-007 (editor and AI)
-3. **Week 3 Priority:** Complete SPRINT-008 through SPRINT-011 (note management and sync)
-4. **Week 4 Priority:** Complete SPRINT-012 through SPRINT-020 (payment, polish, deploy)
+1. **Week 1 Priority:** Complete MS-001 through MS-003 (foundation)
+2. **Week 2 Priority:** Complete MS-004 through MS-007 (editor and AI)
+3. **Week 3 Priority:** Complete MS-008 through MS-011 (note management and sync)
+4. **Week 4 Priority:** Complete MS-012 through MS-020 (payment, polish, deploy)
 
 **TDD Approach:**
-- Write types and interfaces first (SPRINT-003)
+
+- Write types and interfaces first (MS-003)
 - Write unit tests for logic-heavy modules before implementation
 - E2E tests written after feature implementation verified manually
 
 **Offline-First Strategy:**
+
 - Dexie (local) is source of truth
 - Firestore is sync layer
 - All features must work offline first, then add sync
@@ -754,15 +758,15 @@ T001 → T011 → T021 → T033 → T043 → T060 → T073 → T097 → T107 →
 
 ## Risks & Blockers
 
-| Risk ID | Description | Affected Sprint(s) | Mitigation Plan | Owner | Status |
-|---------|-------------|-------------------|-----------------|-------|--------|
-| R001 | OpenAI API unavailability | SPRINT-007 | Dictionary fallback implemented as primary offline mode | Dev Team | ⏳ Not Started |
-| R002 | Stripe webhook signature validation | SPRINT-012 | Use Stripe CLI for local testing before production | Dev Team | ⏳ Not Started |
-| R003 | Tiptap performance with large documents | SPRINT-004 | Virtualization and lazy loading for 50k+ chars | Dev Team | ⏳ Not Started |
-| R004 | Sync conflicts data loss | SPRINT-011 | Comprehensive snapshot system with conflict detection | Dev Team | ⏳ Not Started |
-| R005 | PWA installation discoverability | SPRINT-001 | Clear install prompts and video tutorials | Dev Team | ⏳ Not Started |
-| R006 | Firebase service outages | SPRINT-011 | Offline-first architecture ensures local functionality | Dev Team | ⏳ Not Started |
-| R007 | AI hallucination (incorrect terms) | SPRINT-007 | Validate AI suggestions against dictionary before display | Dev Team | ⏳ Not Started |
+| Risk ID | Description                             | Affected Milestone(s) | Mitigation Plan                                           | Owner    | Status         |
+| ------- | --------------------------------------- | --------------------- | --------------------------------------------------------- | -------- | -------------- |
+| R001    | OpenAI API unavailability               | MS-007                | Dictionary fallback implemented as primary offline mode   | Dev Team | ⏳ Not Started |
+| R002    | Stripe webhook signature validation     | MS-012                | Use Stripe CLI for local testing before production        | Dev Team | ⏳ Not Started |
+| R003    | Tiptap performance with large documents | MS-004                | Virtualization and lazy loading for 50k+ chars            | Dev Team | ⏳ Not Started |
+| R004    | Sync conflicts data loss                | MS-011                | Comprehensive snapshot system with conflict detection     | Dev Team | ⏳ Not Started |
+| R005    | PWA installation discoverability        | MS-001                | Clear install prompts and video tutorials                 | Dev Team | ⏳ Not Started |
+| R006    | Firebase service outages                | MS-011                | Offline-first architecture ensures local functionality    | Dev Team | ⏳ Not Started |
+| R007    | AI hallucination (incorrect terms)      | MS-007                | Validate AI suggestions against dictionary before display | Dev Team | ⏳ Not Started |
 
 **Status Legend:**
 

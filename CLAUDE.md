@@ -149,6 +149,8 @@ nexly-rn/
 - We are not under HIPPA/FERPA laws so don't include any context related to it
 - Focus on building the desktop app for now
 - Web is second priority
+- Write semantic and idiomatic code. Use clear and descriptive names for variables, functions, and classes.
+- Prefer readability over performance and complexity. Write code that is easy to understand and maintain.
 
 ## Context References
 
