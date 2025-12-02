@@ -1,20 +1,17 @@
 #!/usr/bin/env python3
-"""
-Hook: plan_mode
-Event: PreToolUse - ExitPlanMode
-Purpose: Deactivate plan mode
-"""
+"""Module: plan_mode/deactivate - Deactivate plan mode."""
 
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils import set_cache
+from utils import plan_mode
 
 
 def deactivate():
-    set_cache("plan_mode", "is_active", False)
+    """Deactivate plan mode."""
+    plan_mode.deactivate()
     print("Deactivating Planning")
     sys.exit(0)
 

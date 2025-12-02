@@ -14,7 +14,8 @@ def main():
         # Read input from Claude Code
         input_data = json.load(sys.stdin)
 
-        tool_name = input_data.get("tool_name", "")
+        hook_event = input_data.get("hook_event_name", "Unknown")
+        tool_name = input_data.get("tool_name", "N/A")
 
         # Log the input to a file
         project_dir = Path.cwd()
@@ -23,6 +24,7 @@ def main():
         with open(log_file, "a") as f:
             f.write(f"\n{'='*80}\n")
             f.write(f"Timestamp: {datetime.now().isoformat()}\n")
+            f.write(f"Event: {hook_event}\n")
             f.write(f"Tool: {tool_name}\n")
             f.write(f"{'='*80}\n")
             f.write(json.dumps(input_data, indent=2))

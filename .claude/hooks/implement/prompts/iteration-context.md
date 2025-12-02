@@ -1,1 +1,0 @@
-ITERATION CONTROL: After receiving the reviewer's rating, check the score. If the rating is not 10, address the feedback and suggestions and iterate on the code until quality improves. If the rating is 10, update the file `.claude/hooks/review/iteration.json` and set `iterate` to `false` to signal completion. Do NOT continue iterating once rating is 10.

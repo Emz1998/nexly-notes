@@ -24,7 +24,8 @@ The `.claude/hooks/` folder implements an event-driven architecture for Claude C
         ▼                    ▼             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    Specialized Modules                       │
-│  plan_mode/ │ security/ │ notification/ │ implement/        │
+│  plan_mode/ │ research_mode/ │ explore_mode/ │ code_mode/   │
+│  code_review_mode/ │ security/                               │
 └───────┬─────┴─────┬─────┴───────┬───────┴───────────────────┘
         │           │             │
         ▼           ▼             ▼
@@ -65,10 +66,32 @@ Each subdirectory is a self-contained module with:
 
 ```
 plan_mode/
-├── __init__.py          # Exports: validate_plan, activate_plan_mode, deactivate
-├── activate.py          # Internal: activation logic (uses utils/)
-├── validate_plan.py     # Internal: validation logic (uses utils/)
-└── deactivate.py        # Internal: deactivation logic (uses utils/)
+├── __init__.py                  # Exports: activate_plan_mode, deactivate, block_premature_agents, validate_subagent_stop
+├── activate.py                  # Internal: activation logic (uses utils/)
+├── deactivate.py                # Internal: deactivation logic (uses utils/)
+├── block_premature_agents.py    # Internal: blocks agents without required dependencies
+└── validate_subagent_stop.py    # Internal: validates subagent work completion
+
+research_mode/
+├── __init__.py                  # Exports: activate_research_mode, deactivate, block_premature_agents, validate_subagent_stop
+├── activate.py                  # Internal: activation logic (uses utils/)
+├── deactivate.py                # Internal: deactivation logic (uses utils/)
+├── block_premature_agents.py    # Internal: blocks agents without required dependencies (explore, research)
+└── validate_subagent_stop.py    # Internal: validates research subagent work completion + commit
+
+explore_mode/
+├── __init__.py                  # Exports: activate_explore_mode, deactivate, block_premature_agents, validate_subagent_stop
+├── activate.py                  # Internal: activation logic on /implement command (uses utils/)
+├── deactivate.py                # Internal: deactivation logic (uses utils/)
+├── block_premature_agents.py    # Internal: blocks codebase-explorer if specs/tasks.md missing
+└── validate_subagent_stop.py    # Internal: validates codebase-status file created
+
+code_review_mode/
+├── __init__.py                  # Exports: activate_code_review_mode, deactivate, block_premature_agents, validate_subagent_stop
+├── activate.py                  # Internal: activation logic on /code-review command (uses utils/)
+├── deactivate.py                # Internal: deactivation logic (uses utils/)
+├── block_premature_agents.py    # Internal: blocks code-reviewer if code not committed
+└── validate_subagent_stop.py    # Internal: validates review report created with required content
 ```
 
 ### 3. Shared Utilities Pattern
@@ -90,7 +113,12 @@ from utils import read_stdin_json, set_cache, get_cache, log
 | `utils/input.py` | `read_stdin_json()` | Parse JSON from stdin |
 | `utils/output.py` | `log()`, `success_response()`, `block_response()` | Hook output helpers |
 | `utils/cache.py` | `get_cache()`, `set_cache()` | Namespaced state persistence |
-| `utils/git.py` | `get_git_status()`, `get_modified_files()` | Git operations |
+| `utils/git.py` | `get_git_status()`, `get_modified_files()`, `is_file_committed()` | Git operations |
+| `utils/milestone.py` | Path builders and file finders | Milestone path helpers |
+| `utils/frontmatter.py` | `parse_frontmatter()`, `has_consultation_marker()` | YAML frontmatter parsing |
+| `utils/base_mode.py` | `ModeManager`, `plan_mode`, `research_mode`, etc. | Mode state management |
+| `utils/agent_validation.py` | `is_task_call()`, `extract_agent_info()`, `block_agent()` | Agent validation helpers |
+| `utils/prerequisites.py` | `is_code_committed()`, `is_tdd_commit_complete()` | Shared prerequisite checks |
 
 ### 4. Namespaced Cache Management
 
@@ -191,25 +219,27 @@ PreToolUse Event
     ▼
 pre_tool_use.py
     │
-    ├── validate_plan() ─► plan_mode/validate_plan.py
-    │                          │
-    │                          ├── get_cache("plan_mode", "is_active")
-    │                          │
-    │                          ├── get_modified_files() ─► utils/git.py
-    │                          │
-    │                          ├── Check plan file exists
-    │                          │
-    │                          └── exit(0) or exit(2)
+    ├── validate_security() ─► security/security.py
+    │                              │
+    │                              ├── check_dangerous_path()
+    │                              │
+    │                              ├── check_dangerous_command()
+    │                              │
+    │                              └── exit(0) or exit(2)
     │
-    └── security.py (if configured)
-            │
-            ├── check_dangerous_path()
-            │
-            ├── check_dangerous_command()
-            │
-            ├── log_security_event() ─► .claude/logs/SECURITY.log
-            │
-            └── Return allow/deny decision
+    └── block_premature_agents() ─► plan_mode/block_premature_agents.py
+                                        │
+                                        ├── Check if tool_name == "Task"
+                                        │
+                                        ├── Check if subagent_type in (strategic-planner, consulting-expert)
+                                        │
+                                        ├── get_cache("plan_mode", "is_active")
+                                        │
+                                        ├── strategic-planner: Check research file exists
+                                        │
+                                        ├── consulting-expert: Check plan file exists
+                                        │
+                                        └── exit(0) or exit(2)
 ```
 
 ### Plan Mode Activation Flow
@@ -231,6 +261,290 @@ user_prompt_submit.py
     │                               └── Print "Planning Phase" message
     │
     └── exit(0)
+```
+
+### Plan Command Validation Sequence
+
+```
+/plan command triggers validation sequence:
+
+Step 1: Research Report Validation (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests strategic-planner via Task tool              │
+│                          │                                  │
+│                          ▼                                  │
+│  pre_tool_use.py ─► block_premature_agents(input_data)      │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   Research EXISTS              Research NOT FOUND           │
+│   exit(0) ALLOW                exit(2) BLOCK                │
+│                         "Research report not found.         │
+│                          Call research-specialist first."   │
+└─────────────────────────────────────────────────────────────┘
+
+Step 2: Plan Creation Validation (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  strategic-planner attempts to stop                         │
+│                          │                                  │
+│                          ▼                                  │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)     │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   Plan file EXISTS               Plan NOT CREATED           │
+│   exit(0) ALLOW STOP             exit(2) BLOCK STOP         │
+│                         "Plan not created.                  │
+│                          Continue working."                 │
+└─────────────────────────────────────────────────────────────┘
+
+Step 3: Plan Dependency Validation (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests consulting-expert via Task tool              │
+│                          │                                  │
+│                          ▼                                  │
+│  pre_tool_use.py ─► block_premature_agents(input_data)      │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   Plan file EXISTS               Plan NOT FOUND             │
+│   exit(0) ALLOW                  exit(2) BLOCK              │
+│                         "Plan file not found.               │
+│                          Call strategic-planner first."     │
+└─────────────────────────────────────────────────────────────┘
+
+Step 4: Plan Consultation Validation (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  consulting-expert attempts to stop                         │
+│                          │                                  │
+│                          ▼                                  │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)     │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   Frontmatter has              Frontmatter MISSING          │
+│   consulted_by marker          consulted_by marker          │
+│   exit(0) ALLOW STOP           exit(2) BLOCK STOP           │
+│                         "Plan not consulted.                │
+│                          Add frontmatter."                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Research Command Validation Sequence
+
+```
+/research command triggers validation sequence:
+
+Step 1: Explore Dependency Check (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests research-specialist via Task tool             │
+│                          │                                   │
+│                          ▼                                   │
+│  pre_tool_use.py ─► block_premature_agents(input_data)       │
+│                          │                                   │
+│          ┌───────────────┴───────────────┐                   │
+│          │                               │                   │
+│          ▼                               ▼                   │
+│   codebase-status_*     codebase-status_* file               │
+│   file EXISTS           NOT FOUND in exploration/            │
+│   exit(0) ALLOW                   exit(2) BLOCK              │
+│                         "codebase-status file not found.     │
+│                          Run explore phase first."           │
+└─────────────────────────────────────────────────────────────┘
+
+Step 2: Research Report Creation (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  research-specialist attempts to stop                        │
+│                          │                                   │
+│                          ▼                                   │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)      │
+│                          │                                   │
+│          ┌───────────────┴───────────────┐                   │
+│          │                               │                   │
+│          ▼                               ▼                   │
+│   Research file EXISTS           Research NOT CREATED        │
+│   exit(0) ALLOW STOP             exit(2) BLOCK STOP          │
+│                         "Research report not created.        │
+│                          Continue working."                  │
+└─────────────────────────────────────────────────────────────┘
+
+Step 3: Research Dependency Check (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests research-consultant via Task tool             │
+│                          │                                   │
+│                          ▼                                   │
+│  pre_tool_use.py ─► block_premature_agents(input_data)       │
+│                          │                                   │
+│          ┌───────────────┴───────────────┐                   │
+│          │                               │                   │
+│          ▼                               ▼                   │
+│   Research file EXISTS           Research NOT FOUND          │
+│   exit(0) ALLOW                  exit(2) BLOCK               │
+│                         "Research report not found.          │
+│                          Call research-specialist first."    │
+└─────────────────────────────────────────────────────────────┘
+
+Step 4: Research Validation Marker (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  research-consultant attempts to stop                        │
+│                          │                                   │
+│                          ▼                                   │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)      │
+│                          │                                   │
+│          ┌───────────────┴───────────────┐                   │
+│          │                               │                   │
+│          ▼                               ▼                   │
+│   Frontmatter has                Frontmatter MISSING         │
+│   validated_by marker            validated_by marker         │
+│   exit(0) continue               exit(2) BLOCK STOP          │
+│          │                       "Research not validated.    │
+│          ▼                        Add frontmatter."          │
+│   Check if committed                                         │
+│          │                                                   │
+│          ▼                                                   │
+│   Committed? ─► YES ─► exit(0) ALLOW STOP                    │
+│          │                                                   │
+│          ▼                                                   │
+│   NO ─► exit(2) BLOCK STOP                                   │
+│         "Research not committed."                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Explore Command Validation Sequence
+
+```
+/implement command triggers explore validation sequence:
+
+Step 1: Tasks Dependency Check (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests codebase-explorer via Task tool              │
+│                          │                                  │
+│                          ▼                                  │
+│  pre_tool_use.py ─► block_premature_agents(input_data)      │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   specs/tasks.md EXISTS         specs/tasks.md NOT FOUND    │
+│   exit(0) ALLOW                        exit(2) BLOCK        │
+│                         "specs/tasks.md file not found.     │
+│                          Generate tasks first."             │
+└─────────────────────────────────────────────────────────────┘
+
+Step 2: Codebase Status Creation (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  codebase-explorer attempts to stop                         │
+│                          │                                  │
+│                          ▼                                  │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)     │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   codebase-status_*       codebase-status_* file            │
+│   file EXISTS             NOT FOUND in exploration/         │
+│   exit(0) ALLOW STOP      exit(2) BLOCK STOP                │
+│                         "codebase-status file not created.  │
+│                          Continue exploration."             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Code Review Command Validation Sequence
+
+```
+/code-review command triggers code review validation sequence:
+
+Step 1: Prerequisites Check (UserPromptSubmit)
+┌─────────────────────────────────────────────────────────────┐
+│  User enters /code-review command                           │
+│                          │                                  │
+│                          ▼                                  │
+│  user_prompt_submit.py ─► activate_code_review_mode()       │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   No uncommitted src/     Uncommitted src/ changes          │
+│   changes (git-based)     found                             │
+│   exit(0) ACTIVATE             │                            │
+│                                ▼                            │
+│                     code_mode.current_phase                 │
+│                     == "commit"?                            │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   YES ─► exit(0)              NO ─► exit(2) BLOCK           │
+│          ACTIVATE             "Code not committed.          │
+│                                Complete coding first."      │
+└─────────────────────────────────────────────────────────────┘
+
+Step 2: Code-Reviewer Agent Check (PreToolUse:Task)
+┌─────────────────────────────────────────────────────────────┐
+│  User requests code-reviewer via Task tool                  │
+│                          │                                  │
+│                          ▼                                  │
+│  pre_tool_use.py ─► block_premature_agents(input_data)      │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   code_review_mode        code_review_mode                  │
+│   is_active == True       is_active != True                 │
+│   return (ALLOW)                │                           │
+│                                 ▼                           │
+│                     No uncommitted src/ changes?            │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   YES ─► return            NO ─► Check TDD commit phase     │
+│          (ALLOW)                   │                        │
+│                    ┌───────────────┴───────────────┐        │
+│                    │                               │        │
+│                    ▼                               ▼        │
+│              YES ─► return         NO ─► exit(2) BLOCK      │
+│                    (ALLOW)         "Code not committed."    │
+└─────────────────────────────────────────────────────────────┘
+
+Step 3: Review Report Validation (SubagentStop)
+┌─────────────────────────────────────────────────────────────┐
+│  code-reviewer agent attempts to stop                       │
+│                          │                                  │
+│                          ▼                                  │
+│  subagent_stop.py ─► validate_subagent_stop(input_data)     │
+│                          │                                  │
+│          ┌───────────────┴───────────────┐                  │
+│          │                               │                  │
+│          ▼                               ▼                  │
+│   code_review_mode        code_review_mode                  │
+│   is_active == True       is_active != True                 │
+│          │                return (ALLOW)                    │
+│          ▼                                                  │
+│   Review file exists?                                       │
+│          │                                                  │
+│          ▼                                                  │
+│   YES ─► Validate content                                   │
+│          │                                                  │
+│          ▼                                                  │
+│   Contains "summary"        NO ─► exit(2) BLOCK             │
+│   and "findings"?           "Review file not found."        │
+│          │                                                  │
+│          ▼                                                  │
+│   Length >= 200 chars?                                      │
+│          │                                                  │
+│          ▼                                                  │
+│   YES ─► Deactivate mode                                    │
+│          return (ALLOW STOP)                                │
+│          "Code review complete."                            │
+│                                                             │
+│   NO ─► exit(2) BLOCK                                       │
+│         "Review incomplete. Missing sections/content."      │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -295,13 +609,36 @@ from utils import read_stdin_json
 .claude/hooks/
 ├── cache.json               # Shared state with namespaced keys
 ├── [event]_[action].py      # Root handlers (snake_case)
-├── [module]/                # Feature modules
+├── plan_mode/               # Plan mode feature module
 │   ├── __init__.py          # Public exports
-│   └── [feature].py         # Implementation (imports from utils/)
+│   ├── activate.py          # Activation logic
+│   ├── deactivate.py        # Deactivation logic
+│   ├── block_premature_agents.py   # Blocks agents without dependencies
+│   └── validate_subagent_stop.py   # Validates subagent work completion
+├── research_mode/           # Research mode feature module
+│   ├── __init__.py          # Public exports
+│   ├── activate.py          # Activation logic
+│   ├── deactivate.py        # Deactivation logic
+│   ├── block_premature_agents.py   # Blocks agents without dependencies
+│   └── validate_subagent_stop.py   # Validates subagent work + commit
+├── explore_mode/            # Explore mode feature module
+│   ├── __init__.py          # Public exports
+│   ├── activate.py          # Activation logic on /implement command
+│   ├── deactivate.py        # Deactivation logic
+│   ├── block_premature_agents.py   # Blocks codebase-explorer if tasks.md missing
+│   └── validate_subagent_stop.py   # Validates codebase-status file created
+├── code_review_mode/        # Code review mode feature module
+│   ├── __init__.py          # Public exports
+│   ├── activate.py          # Activation logic on /code-review command
+│   ├── deactivate.py        # Deactivation logic
+│   ├── block_premature_agents.py   # Blocks code-reviewer if code not committed
+│   └── validate_subagent_stop.py   # Validates review report with required content
 └── utils/                   # Shared utilities
     ├── __init__.py          # Module exports
     ├── input.py             # read_stdin_json()
     ├── output.py            # log(), success_response(), block_response()
     ├── cache.py             # get_cache(), set_cache()
-    └── git.py               # get_git_status(), get_modified_files()
+    ├── git.py               # get_git_status(), get_modified_files(), is_file_committed()
+    ├── milestone.py         # get_milestone_info(), find_research_file(), find_plan_file(), find_explore_status_file(), find_review_file()
+    └── frontmatter.py       # parse_frontmatter(), has_consultation_marker(), has_research_validation_marker()
 ```

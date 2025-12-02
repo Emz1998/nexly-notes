@@ -1,9 +1,24 @@
 {
-  "test": {
-    "key": "test_value"
-  },
   "plan_mode": {
     "is_active": false,
-    "session_id": "7cda1f6e-2004-423e-b8a9-b7fbfa34cd5f"
+    "session_id": "26d3c6a0-0574-4b2c-b31d-e292a9079630"
+  },
+  "research_mode": {
+    "is_active": false,
+    "session_id": "test-123"
+  },
+  "explore_mode": {
+    "is_active": false,
+    "session_id": "test-123"
+  },
+  "code_mode": {
+    "is_active": false,
+    "session_id": "",
+    "current_phase": "",
+    "plan_file": ""
+  },
+  "code_review_mode": {
+    "is_active": true,
+    "session_id": "test-final"
   }
 }

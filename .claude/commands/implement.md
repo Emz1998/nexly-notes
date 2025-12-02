@@ -1,102 +1,70 @@
 ---
 name: implement
 description: Build a production-ready feature with thorough planning and structured context gathering
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Task, TodoWrite, AskUserQuestion, WebSearch, WebFetch
+allowed-tools: Read, SlashCommand, TodoWrite, AskUserQuestion
 argument-hint: Build a <feature> that will <functionality>
+model: sonnet
 ---
 
-**Goal**: Implement task(s) from `@specs/tasks.md` following the EPIC workflow (Explore, Plan, Implement, Commit)
+**Goal**: Implement task(s) from `@specs/tasks.md` by orchestrating the workflow commands
 
 ## Context
 
 - Tasks file: `@specs/tasks.md`
 - User request: $ARGUMENTS
+- Workflow: `/explore` → `/research` → `/plan` → `/code` → `/code-review`
 
 ## Tasks
 
-### Phase 1: Explore
+### Phase 1: Explore Codebase
 
 - T001: Parse user request to identify task IDs (T001, T002, etc.) from `specs/tasks.md`
-- T002: Delegate to `codebase-explorer` agent to understand current project state, relevant files, and dependencies
-- T003: Document exploration findings and affected areas
+- T002: Call `/explore $ARGUMENTS` using `SlashCommand` tool to analyze project structure
 
-### Phase 2: Plan
+### Phase 2: Research Best Practices
 
-- T004: Delegate to `research-specialist` agent to research best practices, patterns, and implementation approaches
-- T005: Delegate to `strategic-planner` agent to create detailed implementation strategy
-- T006: Review and consolidate plans from both agents into a unified approach
-- T007: Use `AskUserQuestion` to validate approach with user if needed
+- T003: Call `/research $ARGUMENTS` using `SlashCommand` tool to gather patterns and approaches
 
-### Phase 2.5: Plan Review (Quality Gate)
+### Phase 3: Create Implementation Plan
 
-- T008: Signal "plan complete" to trigger `implementation-review` skill
-- T009: Delegate to `plan-consultant` agent to review the implementation strategy
-- T010: Address any critical issues flagged by plan-consultant before proceeding
-- T011: If review status is BLOCKED, revise plan and re-review
+- T004: Call `/plan implementation $ARGUMENTS` using `SlashCommand` tool to create strategy
+- T005: Use `AskUserQuestion` to validate approach with user if needed
 
-### Phase 3: Implement (TDD)
+### Phase 4: Implement with TDD
 
-- T012: Delegate to `test-engineer` agent to create failing tests for the feature
-- T013: Verify tests fail as expected (Red phase)
-- T014: Implement minimal code to make tests pass (Green phase)
-- T015: Verify all tests pass
-- T016: Refactor code while keeping tests passing
-- T017: Delegate to `troubleshooter` agent if errors or issues arise
-- T018: Run full test suite to ensure no regressions
+- T006: Call `/code $ARGUMENTS` using `SlashCommand` tool to start TDD workflow
 
-### Phase 3.5: Code Review (Quality Gate)
+### Phase 5: Code Review
 
-- T019: Signal "implementation complete" to trigger `implementation-review` skill
-- T020: Delegate to `code-reviewer` agent to review the implementation
-- T021: Address any critical issues flagged by code-reviewer before proceeding
-- T022: If review status is BLOCKED, fix code and re-review
+- T007: Call `/code-review` using `SlashCommand` tool to review implementation
+- T008: Address any critical issues flagged before marking task complete
 
-### Phase 4: Commit
+### Phase 6: Finalize
 
-- T023: Delegate to `version-manager` agent to create proper git commit with changes
-- T024: Verify commit was created successfully
-- T025: Update task status in `specs/tasks.md` to completed
+- T009: Update task status in `specs/tasks.md` to completed
+- T010: Report implementation summary to user
 
 ## Implementation Strategy
 
-- Follow TDD strictly: Red (failing test) -> Green (minimal implementation) -> Refactor
-- Use specialized agents for their designated roles - do not bypass the workflow
-- Main agent handles only the actual implementation code, not tests or commits
-- Track progress using TodoWrite throughout the EPIC workflow
-- If a task spans multiple sub-tasks, complete one full EPIC cycle per logical unit
-- Validate each phase completion before proceeding to the next
-
-## Agent Delegation Map
-
-| Phase       | Agent                 | Purpose                                                |
-| ----------- | --------------------- | ------------------------------------------------------ |
-| Explore     | `codebase-explorer`   | Analyze project structure, dependencies, relevant code |
-| Plan        | `research-specialist` | Research best practices, patterns, libraries           |
-| Plan        | `strategic-planner`   | Create implementation roadmap and strategy             |
-| Plan Review | `plan-consultant`     | Review and validate implementation strategy            |
-| Implement   | `test-engineer`       | Write unit/integration tests following TDD             |
-| Implement   | `troubleshooter`      | Debug and resolve implementation issues                |
-| Code Review | `code-reviewer`       | Review code quality, security, and best practices      |
-| Commit      | `version-manager`     | Create git commits with proper messages                |
+- Use `SlashCommand` tool to call each workflow command in sequence
+- Each phase must complete before proceeding to the next
+- Track progress using TodoWrite throughout the workflow
 
 ## Prohibited Tasks
 
-- DO NOT skip the Explore phase - context is critical
-- DO NOT implement code before tests are written (TDD violation)
-- DO NOT create git commits directly - delegate to version-manager
-- DO NOT modify test files directly - delegate to test-engineer
-- DO NOT skip user validation for significant design decisions
-- DO NOT proceed to Commit if tests are failing
+- DO NOT bypass the workflow by calling agents directly
+- DO NOT skip phases in the workflow sequence
+- DO NOT call `/code` without completing `/plan` first
+- DO NOT call `/code-review` with uncommitted changes
 
 ## Success Criteria
 
 - [ ] Task IDs correctly identified from specs/tasks.md
-- [ ] Codebase exploration completed with documented findings
-- [ ] Research and strategy plans generated and consolidated
-- [ ] Tests written before implementation (TDD Red phase)
-- [ ] All tests pass after implementation (TDD Green phase)
-- [ ] Code refactored without breaking tests
-- [ ] Git commit created with descriptive message
+- [ ] `/explore` completed
+- [ ] `/research` completed
+- [ ] `/plan` completed
+- [ ] `/code` completed with passing tests and committed changes
+- [ ] `/code-review` completed
 - [ ] Task status updated in specs/tasks.md
 
 ## Examples
@@ -105,11 +73,11 @@ argument-hint: Build a <feature> that will <functionality>
 # Implement a single task
 /implement T001
 
+# Implement a feature
+/implement Build user authentication that will allow users to sign in with email
+
 # Implement multiple sequential tasks
 /implement T001-T003
-
-# Implement all tasks in Phase 1
-/implement Phase 1
 
 # Implement sprint tasks
 /implement SPRINT-001 tasks

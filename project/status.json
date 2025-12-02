@@ -2,6 +2,7 @@
     "project_phase": "MVP",
     "current_plan_phase": "Foundation",
     "current_milestone": "MS-001",
+    "milestone_description": "Foundation",
     "current_task": "T001",
     "current_task_phase": "explore",
     "current_task_status": "not_started",
