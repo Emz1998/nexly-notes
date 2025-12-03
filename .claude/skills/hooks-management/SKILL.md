@@ -10,6 +10,7 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
 ### Phase 1: Pre-flight Check
 
 - T000: **Run tests FIRST** to verify baseline:
+
   ```bash
   # Unit tests (fast, isolated)
   .claude/hooks/.venv/bin/pytest .claude/hooks/tests/ -v
@@ -17,6 +18,7 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
   # Integration tests (full hook execution)
   python3 .claude/skills/hooks-management/scripts/test-hooks-regression.py
   ```
+
   - If tests fail, investigate and fix before proceeding
   - Document any pre-existing failures
 
@@ -36,14 +38,13 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
 
 ### Phase 4: Documentation & Validation
 
-- T008: Update `.claude/skills/hooks-management/references/hooks-status.md` to reflect changes
-- T009: Update `.claude/skills/hooks-management/references/architecture-pattern.md` if architectural changes were made (new modules, utils, patterns)
-- T010: **Update regression test script** if hooks were added/modified/deleted:
+- T008: **Update regression test script** if hooks were added/modified/deleted:
   - Add new test cases for new hooks
   - Modify test cases for updated hooks
   - Remove test cases for deleted hooks
   - Location: `.claude/skills/hooks-management/scripts/test-hooks-regression.py`
-- T011: **Run tests AGAIN** to verify all hooks work:
+- T009: **Run tests AGAIN** to verify all hooks work:
+
   ```bash
   # Unit tests (fast, isolated)
   .claude/hooks/.venv/bin/pytest .claude/hooks/tests/ -v
@@ -51,9 +52,11 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
   # Integration tests (full hook execution)
   python3 .claude/skills/hooks-management/scripts/test-hooks-regression.py
   ```
+
   - All tests must pass before completing the task
   - If tests fail, fix issues and re-run
-- T012: Provide comprehensive report to main agent
+
+- T010: Provide comprehensive report to main agent
 
 ## Implementation Strategy
 
@@ -65,10 +68,10 @@ description: Use PROACTIVELY when you need to create, update, configure, or vali
 - Implement idempotent operations where possible
 
 **IMPORTANT - Dispatcher Pattern:**
+
 - Use root entry point handlers (e.g., `pre_tool_use.py`, `subagent_stop.py`) as dispatchers
 - Add new functionality by creating modules in subdirectories (e.g., `plan_mode/`) and importing them in root handlers
 - **DO NOT** add new entries to `settings.local.json` for new hook logic - modify existing root handlers instead
-- If unsure about the architecture, consult `.claude/skills/hooks-management/references/architecture-pattern.md`
 
 ## Testing Strategy
 
@@ -121,11 +124,13 @@ python3 .claude/skills/hooks-management/scripts/test-hooks-regression.py
 ```
 
 **Pytest Unit Tests** (`tests/`):
+
 - `test_utils.py` - Cache, base_mode, agent_validation, frontmatter
 - `test_security.py` - Security validation functions
 - `test_modes.py` - Mode activation/deactivation
 
 **Integration Tests** (`scripts/test-hooks-regression.py`):
+
 - Utility functions (cache, frontmatter, milestone, git)
 - Security validation (dangerous commands/paths blocking)
 - Plan/Research/Explore/Code/Code-Review mode workflows
@@ -133,6 +138,7 @@ python3 .claude/skills/hooks-management/scripts/test-hooks-regression.py
 - Session hooks (session_start)
 
 **When to Update Tests:**
+
 - **New hook**: Add pytest unit tests + integration test cases
 - **Modified hook**: Update existing test cases to match new behavior
 - **Deleted hook**: Remove test cases for the deleted hook
@@ -145,8 +151,6 @@ python3 .claude/skills/hooks-management/scripts/test-hooks-regression.py
 - Hook executes successfully on target event
 - Error handling covers common failure scenarios
 - No security vulnerabilities detected
-- `hooks-status.md` reference updated to reflect current hook state
-- `architecture-pattern.md` updated if architectural changes were made
 - **All tests pass (37 pytest unit tests + 65 integration tests)**
 - **Regression test script updated if hooks changed**
 - Comprehensive report provided to main agent upon completion

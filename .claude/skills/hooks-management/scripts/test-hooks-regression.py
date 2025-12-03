@@ -871,6 +871,148 @@ class HooksTestRunner:
         self.log_test("allow stop when mode inactive", code == 0, "", code)
 
     # =========================================================================
+    # Implement Flow Mode Tests
+    # =========================================================================
+
+    def test_implement_flow_activation(self):
+        """Test implement flow mode activation."""
+        print(f"\n{Colors.BOLD}Testing: implement_flow_mode/activate.py{Colors.END}")
+
+        self.clear_cache()
+
+        # Test via user_prompt_submit with /implement command
+        user_prompt_hook = self.hooks_dir / "user_prompt_submit.py"
+        input_data = {
+            "hook_event_name": "UserPromptSubmit",
+            "prompt": "/implement MS-001",
+            "session_id": self.test_session_id,
+        }
+        code, stdout, stderr = self.run_hook(user_prompt_hook, input_data)
+        self.log_test("activate implement flow", code == 0, stdout.strip()[:60], code)
+
+        # Verify cache was set
+        sys.path.insert(0, str(self.hooks_dir))
+        from utils.cache import get_cache
+
+        is_active = get_cache("implement_flow", "is_active")
+        self.log_test("implement_flow.is_active set", is_active is True)
+
+        current_step = get_cache("implement_flow", "current_step")
+        self.log_test("implement_flow.current_step initialized", current_step == 0)
+
+    def test_implement_flow_validation(self):
+        """Test implement flow slash command sequence validation."""
+        print(f"\n{Colors.BOLD}Testing: implement_flow_mode/validate_flow.py{Colors.END}")
+
+        # Set up implement flow mode
+        self.set_cache("implement_flow", "is_active", True)
+        self.set_cache("implement_flow", "session_id", self.test_session_id)
+        self.set_cache("implement_flow", "current_step", 0)
+        self.set_cache("implement_flow", "completed_steps", [])
+
+        pre_tool_hook = self.hooks_dir / "pre_tool_use.py"
+
+        # Test correct first step (/explore) is allowed
+        input_data = {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/explore test"},
+        }
+        code, stdout, stderr = self.run_hook(pre_tool_hook, input_data)
+        self.log_test("allow /explore (first step)", code == 0, "", code)
+
+        # Test skipping ahead blocked (/plan before /research)
+        self.set_cache("implement_flow", "current_step", 1)  # After explore
+        self.set_cache("implement_flow", "completed_steps", ["explore"])
+        input_data = {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/plan implementation test"},
+        }
+        code, stdout, stderr = self.run_hook(pre_tool_hook, input_data)
+        self.log_test(
+            "block /plan (need /research first)",
+            code == 2,
+            stderr.strip()[:60] if stderr else "",
+            code,
+        )
+
+        # Test correct next step (/research) is allowed
+        input_data = {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/research best practices"},
+        }
+        code, stdout, stderr = self.run_hook(pre_tool_hook, input_data)
+        self.log_test("allow /research (correct step)", code == 0, "", code)
+
+        # Test non-flow commands not blocked
+        input_data = {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/initialize something"},
+        }
+        code, stdout, stderr = self.run_hook(pre_tool_hook, input_data)
+        self.log_test("allow non-flow command", code == 0, "", code)
+
+    def test_implement_flow_step_completion(self):
+        """Test implement flow step completion via post_tool_use."""
+        print(f"\n{Colors.BOLD}Testing: implement_flow_mode step completion{Colors.END}")
+
+        # Set up implement flow mode
+        self.set_cache("implement_flow", "is_active", True)
+        self.set_cache("implement_flow", "session_id", self.test_session_id)
+        self.set_cache("implement_flow", "current_step", 0)
+        self.set_cache("implement_flow", "completed_steps", [])
+
+        post_tool_hook = self.hooks_dir / "post_tool_use.py"
+
+        # Test marking /explore complete
+        input_data = {
+            "hook_event_name": "PostToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/explore test"},
+        }
+        code, stdout, stderr = self.run_hook(post_tool_hook, input_data)
+        self.log_test("mark /explore complete", code == 0, stderr.strip()[:50] if stderr else "", code)
+
+        # Verify step advanced
+        sys.path.insert(0, str(self.hooks_dir))
+        from utils.cache import get_cache
+
+        current_step = get_cache("implement_flow", "current_step")
+        self.log_test("current_step advanced to 1", current_step == 1)
+
+        completed = get_cache("implement_flow", "completed_steps")
+        self.log_test("explore in completed_steps", "explore" in completed)
+
+    def test_implement_flow_duplicate_blocked(self):
+        """Test that repeating a completed step is blocked."""
+        print(f"\n{Colors.BOLD}Testing: implement_flow_mode duplicate blocking{Colors.END}")
+
+        # Set up implement flow mode with explore already completed
+        self.set_cache("implement_flow", "is_active", True)
+        self.set_cache("implement_flow", "session_id", self.test_session_id)
+        self.set_cache("implement_flow", "current_step", 1)
+        self.set_cache("implement_flow", "completed_steps", ["explore"])
+
+        pre_tool_hook = self.hooks_dir / "pre_tool_use.py"
+
+        # Test repeating /explore is blocked
+        input_data = {
+            "hook_event_name": "PreToolUse",
+            "tool_name": "SlashCommand",
+            "tool_input": {"command": "/explore again"},
+        }
+        code, stdout, stderr = self.run_hook(pre_tool_hook, input_data)
+        self.log_test(
+            "block duplicate /explore",
+            code == 2,
+            stderr.strip()[:60] if stderr else "",
+            code,
+        )
+
+    # =========================================================================
     # Root Dispatcher Tests
     # =========================================================================
 
@@ -1026,6 +1168,12 @@ class HooksTestRunner:
             self.test_code_review_mode_activation()
             self.test_code_review_mode_block_agents()
             self.test_code_review_mode_validate_stop()
+
+            # Implement flow mode tests
+            self.test_implement_flow_activation()
+            self.test_implement_flow_validation()
+            self.test_implement_flow_step_completion()
+            self.test_implement_flow_duplicate_blocked()
 
             # Dispatcher tests
             self.test_pre_tool_use_dispatcher()

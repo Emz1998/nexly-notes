@@ -4,15 +4,25 @@
 
 **Project Title:** NEXLY RN - AI-Powered Nursing Note-Taking PWA
 
-**Target Release Date:** 4-Week Build Timeline (see Tech Specs Section 16)
+**Target Release Date:** 4-Week Build Timeline
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02
 
 **Related Documentation:**
 
-- PRD: `specs/prd.md`
-- Tech Specs: `specs/tech-specs.md`
-- UI/UX: `specs/ux.md`
+- PRD: `specs/architecture/prd.md`
+- Tech Specs: `specs/architecture/tech-specs.md`
+- UI/UX: `specs/architecture/ux.md`
+
+**Development Approach:** Contract-First, Mock-Driven Development
+
+1. Define interfaces, types, and Zod schemas as single source of truth
+2. Build frontend/UI with mocked data including error states and edge cases
+3. Validate and iterate on UX quickly while backend is fake
+4. Implement real backend incrementally, one endpoint at a time
+5. Replace mocks with real integrations using feature flags
+6. Enforce end-to-end type safety with shared schemas
+7. Keep mocks for testing and local development
 
 **Task Status Legend:**
 
@@ -29,32 +39,33 @@
 **Notation Guide:**
 
 - [P] for Parallel Tasks - task has NO dependencies on other tasks in same milestone
+- [SA] for Subagent Tasks - isolated tasks that can be delegated to subagents without context
 - Tasks without [P] have dependencies on previous tasks
 - MS-[NNN]: Milestone Number (e.g. MS-001)
 - T[NNN]: Task Number (e.g. T001)
 
 ---
 
-### Phase 1: Foundation
+### Phase 1: Foundation & Contracts
 
-**CRITICAL: This phase establishes the development environment and core type system. All subsequent phases depend on successful completion.**
+**CRITICAL: This phase establishes the development environment, type system, and mock infrastructure. All subsequent phases depend on successful completion.**
 
 #### **MS-001:** Environment Setup (Week 1)
 
-**Goal:** Next.js 15 + React 19 development environment fully configured with Firebase, Stripe, and PWA support
+**Goal:** Next.js 15 + React 19 development environment fully configured with TypeScript strict mode, testing infrastructure, and PWA support
 
 **Tasks:**
 
-- T001 [P]: Initialize Next.js 15.1 project with App Router, React 19.1, and TypeScript 5.9
-- T002 [P]: Configure Tailwind CSS 4.1 with Shadcn UI theme tokens (see UX Section 2)
-- T003 [P]: Set up ESLint, Prettier, and TypeScript strict mode configuration
-- T004: Install core dependencies (Firebase SDK, Dexie, Zustand, Immer, OpenAI, Stripe, Zod)
-- T005: Install dev dependencies (Vitest 3.2.4, Playwright 1.55.0, React Testing Library)
-- T006: Configure Vitest for unit testing with React support
-- T007: Configure Playwright for E2E testing (Chrome, Firefox, WebKit)
-- T008: Set up environment variables structure (.env.local, .env.example) per Tech Specs Section 12
-- T009: Configure next-pwa 5.6.0 with service worker and manifest.json (FR-035, FR-036, FR-037)
-- T010: Create project folder structure per Tech Specs Section 11
+- [ ] T001 [P]: Initialize Next.js 15.1 project with App Router, React 19.1, and TypeScript 5.9
+- [ ] T002 [P]: Configure Tailwind CSS 4.1 with Shadcn UI theme tokens (see UX Section 2)
+- [ ] T003 [P]: Set up ESLint, Prettier, and TypeScript strict mode configuration
+- [ ] T004: Install core dependencies (Zod, Zustand, Immer, next-pwa)
+- [ ] T005: Install dev dependencies (Vitest 3.2.4, Playwright 1.55.0, React Testing Library, MSW)
+- [ ] T006: Configure Vitest for unit testing with React support
+- [ ] T007: Configure Playwright for E2E testing (Chrome, Firefox, WebKit)
+- [ ] T008: Set up environment variables structure (.env.local, .env.example) per Tech Specs Section 12
+- [ ] T009: Configure next-pwa 5.6.0 with service worker and manifest.json (FR-035, FR-036, FR-037)
+- [ ] T010: Create project folder structure per Tech Specs Section 11
 
 **Acceptance Criteria:**
 
@@ -63,6 +74,7 @@
 - [ ] TypeScript compilation passes with strict mode
 - [ ] PWA manifest loads correctly with app icons
 - [ ] Service worker registers in browser
+- [ ] Vitest runs with `npm test`
 
 **Verification:**
 
@@ -72,62 +84,31 @@
 
 ---
 
-#### **MS-002:** Firebase & Authentication Setup (Week 1)
+#### **MS-002:** Core Type Definitions & Zod Schemas (Week 1)
 
-**Goal:** Firebase project configured with Auth and Firestore, authentication flows implemented
-
-**Tasks:**
-
-- T011: Configure Firebase Client SDK (Client-side initialization)
-- T012: Configure Firebase Admin SDK (Server-side for API routes)
-- T013: Implement Firestore security rules per Tech Specs Section 4
-- T014: Create auth middleware for protected routes (middleware.ts)
-- T015: Build Login page UI with form validation (8+ chars, 1 upper, 1 lower, 1 number, 1 special)
-- T016: Build Sign Up page UI with password requirements checklist (UX Section 4.1)
-- T017: Build Password Reset page and email flow
-- T018: Implement session management with httpOnly cookies (24-hour expiry)
-- T019: Create POST /api/auth/initialize endpoint for user document creation
-- T020: Add session expiry handling (prompt re-authentication, preserve local data)
-
-**Acceptance Criteria:**
-
-- [ ] User can sign up with email/password meeting requirements (FR-022)
-- [ ] User can log in and maintain session across browser sessions (FR-023)
-- [ ] User can reset password via email (FR-024)
-- [ ] Protected routes redirect unauthenticated users to login
-- [ ] Firestore rules prevent cross-user data access
-
-**Verification:**
-
-- Create test account, log in, refresh browser, verify session persists
-- Attempt to access another user's data via direct Firestore query (should fail)
-- Test password reset flow end-to-end
-
----
-
-#### **MS-003:** Core Type Definitions (Week 1)
-
-**Goal:** Define TypeScript interfaces and Zod validation schemas for all data models
+**Goal:** Define TypeScript interfaces and Zod validation schemas as single source of truth for all data models
 
 **Tasks:**
 
-- T021 [P]: Define UserProfile type with tier, usage, settings, and Stripe fields (Tech Specs Section 3)
-- T022 [P]: Define Note type with content (JSONContent), category, metadata, syncStatus
-- T023 [P]: Define VersionSnapshot type for sync conflict recovery
-- T024 [P]: Define category enum: pharmacology, med-surg, pediatrics, ob, mental-health, clinical-rotation, other
-- T025: Create Zod schemas for Note validation (noteSchema, noteContentSchema)
-- T026: Create Zod schemas for API request/response validation
-- T027: Define Dexie database schema (NexlyDatabase class) per Tech Specs Section 3
-- T028: Define AI types (AutocompleteRequest, AutocompleteResponse, suggestion source)
-- T029: Define Stripe types (checkout session, webhook events, subscription status)
-- T030: Create shared utility types (Result<T,E>, AsyncState<T>, APIResponse<T>)
-- T031: Define error types (AppError, ValidationError, NetworkError, SyncError)
-- T032: Create barrel exports in src/types/index.ts
+- [ ] T011 [P] [SA]: Define UserProfile type with tier, usage, settings, and Stripe fields (Tech Specs Section 3)
+- [ ] T012 [P] [SA]: Define Note type with content (JSONContent), category, metadata, syncStatus
+- [ ] T013 [P] [SA]: Define Snapshot type for sync conflict recovery
+- [ ] T014 [P] [SA]: Define category enum: pharmacology, med-surg, pediatrics, ob, mental-health, clinical-rotation, other
+- [ ] T015: Create Zod schemas for Note validation (noteSchema, noteContentSchema) with runtime validation
+- [ ] T016: Create Zod schemas for User validation (userSchema, userPreferencesSchema)
+- [ ] T017: Define API request/response types with Zod schemas (autocompleteRequestSchema, autocompleteResponseSchema)
+- [ ] T018 [SA]: Define AI types (AutocompleteRequest, AutocompleteResponse, suggestion source)
+- [ ] T019 [SA]: Define Stripe types (checkout session, webhook events, subscription status)
+- [ ] T020 [SA]: Create shared utility types (Result<T,E>, AsyncState<T>, APIResponse<T>)
+- [ ] T021 [SA]: Define error types (AppError, ValidationError, NetworkError, SyncError)
+- [ ] T022: Create type-safe API client interface with inferred types from Zod schemas
+- [ ] T023: Create barrel exports in src/types/index.ts
 
 **Acceptance Criteria:**
 
 - [ ] All core types defined with proper TypeScript interfaces
-- [ ] Zod schemas implemented for critical data structures
+- [ ] Zod schemas implemented for all critical data structures
+- [ ] API types inferred from Zod schemas (no duplication)
 - [ ] Type exports organized in barrel files
 - [ ] No TypeScript compilation errors
 
@@ -135,27 +116,101 @@
 
 - Run `npx tsc --noEmit` and confirm zero errors
 - Verify all types are exported from src/types/index.ts
+- Test Zod schema validation with sample data
 
 ---
 
-### Phase 2: Core Editor & AI (Week 2)
+#### **MS-003:** Mock Infrastructure & API Layer (Week 1)
 
-#### **MS-004:** Tiptap Editor Integration
-
-**Goal:** Rich text editor with auto-save, formatting toolbar, and distraction-free UI
+**Goal:** Create comprehensive mock system for all APIs with realistic delays, error states, and edge cases
 
 **Tasks:**
 
-- T033: Install Tiptap 3.4 dependencies (@tiptap/react, @tiptap/starter-kit, extensions)
-- T034: Create base TiptapEditor component with dynamic import (SSR disabled)
-- T035: Implement editor placeholder: "Start typing your notes... Type / for commands"
-- T036: Build editor toolbar with formatting buttons (Bold, Italic, Heading, List, Link) per UX Section 4.4
-- T037: Create inline title editing in toolbar
-- T038: Implement category dropdown in toolbar (7 predefined categories)
-- T039: Add AI quota badge component showing remaining requests or "Dictionary" mode
-- T040: Add sync status indicator (Synced/Offline/Syncing...) with color states
-- T041: Add save status indicator ("Saved just now" → "Saved 1m ago" → "Saved 5m ago")
-- T042: Implement editor max-width 900px centered layout with responsive padding
+- [ ] T024 [P]: Set up MSW (Mock Service Worker) for API mocking in browser and tests
+- [ ] T025 [P]: Create mock data generators using Zod schemas (faker integration)
+- [ ] T026 [P]: Create mock user data with different tiers (free, pro) and quota states
+- [ ] T027 [P]: Create mock notes collection (10-20 notes across all categories)
+- [ ] T028: Create mock AI autocomplete handler with realistic 150-200ms delays
+- [ ] T029: Create mock dictionary fallback with 5,000+ nursing terms sample
+- [ ] T030: Create mock Stripe checkout/webhook handlers
+- [ ] T031: Create mock auth handlers (login, signup, logout, password reset)
+- [ ] T032: Implement error simulation (network errors, quota exceeded, validation failures)
+- [ ] T033: Create feature flag system for toggling mock vs real APIs
+- [ ] T034: Create mock sync status simulation (online, offline, syncing, conflict)
+- [ ] T035: Document mock API contracts in src/mocks/README.md
+
+**Acceptance Criteria:**
+
+- [ ] MSW intercepts all API calls in development mode
+- [ ] Mock responses match Zod schema definitions exactly
+- [ ] Error states can be triggered programmatically
+- [ ] Feature flags toggle between mock and real APIs
+- [ ] Realistic delays simulate production latency
+
+**Verification:**
+
+- Start dev server and verify network tab shows mocked responses
+- Trigger error states and verify UI handles them correctly
+- Toggle feature flags and verify API switching works
+
+---
+
+### Phase 2: UI Development with Mocks
+
+**Build complete frontend experience using mocked backends. Validate UX before implementing real integrations.**
+
+#### **MS-004:** Authentication UI (Week 1-2)
+
+**Goal:** Complete authentication flow with form validation, error handling, and session management (all using mocks)
+
+**Tasks:**
+
+- [ ] T036 [P]: Build Login page UI with form validation (8+ chars, 1 upper, 1 lower, 1 number, 1 special)
+- [ ] T037 [P]: Build Sign Up page UI with password requirements checklist (UX Section 4.1)
+- [ ] T038 [P]: Build Password Reset page and email flow UI
+- [ ] T039: Create useAuth hook with mock authentication state
+- [ ] T040: Create auth middleware for protected routes (middleware.ts) using mock session
+- [ ] T041: Implement session state management with Zustand
+- [ ] T042: Add session expiry handling UI (prompt re-authentication, preserve local data)
+- [ ] T043: Create AuthProvider context with mock user data
+- [ ] T044: Add loading states and error handling for all auth flows
+- [ ] T045: Write unit tests for auth forms and validation
+
+**Acceptance Criteria:**
+
+- [ ] User can sign up with mock email/password meeting requirements (FR-022)
+- [ ] User can log in and maintain mock session across browser sessions (FR-023)
+- [ ] User can reset password via mock email flow (FR-024)
+- [ ] Protected routes redirect unauthenticated users to login
+- [ ] All form validations work with proper error messages
+
+**Verification:**
+
+- Test signup flow with valid/invalid inputs
+- Test login with mock credentials
+- Verify protected route redirection
+- Test password reset flow
+
+---
+
+#### **MS-005:** Tiptap Editor Integration (Week 2)
+
+**Goal:** Rich text editor with auto-save, formatting toolbar, and distraction-free UI (local storage only)
+
+**Tasks:**
+
+- [ ] T046: Install Tiptap 3.4 dependencies (@tiptap/react, @tiptap/starter-kit, extensions)
+- [ ] T047: Create base TiptapEditor component with dynamic import (SSR disabled)
+- [ ] T048: Implement editor placeholder: "Start typing your notes... Type / for commands"
+- [ ] T049: Build editor toolbar with formatting buttons (Bold, Italic, Heading, List, Link) per UX Section 4.4
+- [ ] T050: Create inline title editing in toolbar
+- [ ] T051: Implement category dropdown in toolbar (7 predefined categories)
+- [ ] T052: Add AI quota badge component showing remaining requests or "Dictionary" mode (mock data)
+- [ ] T053: Add sync status indicator (Synced/Offline/Syncing...) with color states (mock states)
+- [ ] T054: Add save status indicator ("Saved just now" → "Saved 1m ago" → "Saved 5m ago")
+- [ ] T055: Implement editor max-width 900px centered layout with responsive padding
+- [ ] T056: Create EditorSkeleton loading component for dynamic import
+- [ ] T057: Write unit tests for editor toolbar and status indicators
 
 **Acceptance Criteria:**
 
@@ -172,19 +227,21 @@
 
 ---
 
-#### **MS-005:** Auto-Save & Local Storage
+#### **MS-006:** Auto-Save & Local Storage (Week 2)
 
-**Goal:** Implement 30-second auto-save to IndexedDB with visual feedback
+**Goal:** Implement 30-second auto-save to localStorage/IndexedDB with visual feedback (mock sync layer)
 
 **Tasks:**
 
-- T043: Initialize Dexie database with notes, syncQueue, versionSnapshots tables
-- T044: Create useAutoSave hook with 30-second debounced save to Dexie
-- T045: Implement save indicator state machine (idle → saving → saved)
-- T046: Create useLocalNotes hook for CRUD operations on Dexie
-- T047: Implement note version tracking (version number increments on each save)
-- T048: Add error handling for failed local saves with retry
-- T049: Create EditorSkeleton loading component for dynamic import
+- [ ] T058: Create local storage abstraction layer (can swap to PowerSync later)
+- [ ] T059: Implement note CRUD operations on local storage
+- [ ] T060: Create useAutoSave hook with 30-second debounced save
+- [ ] T061: Implement save indicator state machine (idle → saving → saved)
+- [ ] T062: Create useLocalNotes hook for CRUD operations
+- [ ] T063: Implement note version tracking (version number increments on each save)
+- [ ] T064: Add error handling for failed local saves with retry
+- [ ] T065: Create mock sync queue that simulates PowerSync behavior
+- [ ] T066: Write unit tests for auto-save and local storage hooks
 
 **Acceptance Criteria:**
 
@@ -197,26 +254,27 @@
 
 - Edit note, wait 30 seconds, close browser, reopen and verify changes preserved
 - Time save operation and confirm <500ms
-- Test save while offline (should work)
+- Test save while "offline" (should work locally)
 
 ---
 
-#### **MS-006:** Slash Command System
+#### **MS-007:** Slash Command System (Week 2)
 
 **Goal:** Implement /template and /formula slash commands with floating menu
 
 **Tasks:**
 
-- T050: Create Tiptap slash command extension with "/" trigger
-- T051: Build SlashCommandMenu floating component (320px width, 400px max-height)
-- T052: Implement menu keyboard navigation (arrow keys, Enter, Escape)
-- T053: Create template content definitions (Care Plan, Medication Card, SOAP Note, Head-to-Toe, Pathophysiology)
-- T054: Create formula content definitions with normal ranges (MAP, BMI, IV Drip, Dosage, GCS, Fluid Deficit)
-- T055: Implement template insertion with cursor positioning in first field
-- T056: Implement formula insertion with formatted structure
-- T057: Add search/filter as user types after "/"
-- T058: Style menu items per UX Section 4.5 (44px height, hover states)
-- T059: Add mobile adaptation (full-width bottom sheet, 52px touch targets)
+- [ ] T067: Create Tiptap slash command extension with "/" trigger
+- [ ] T068: Build SlashCommandMenu floating component (320px width, 400px max-height)
+- [ ] T069: Implement menu keyboard navigation (arrow keys, Enter, Escape)
+- [ ] T070 [SA]: Create template content definitions (Care Plan, Medication Card, SOAP Note, Head-to-Toe, Pathophysiology)
+- [ ] T071 [SA]: Create formula content definitions with normal ranges (MAP, BMI, IV Drip, Dosage, GCS, Fluid Deficit)
+- [ ] T072: Implement template insertion with cursor positioning in first field
+- [ ] T073: Implement formula insertion with formatted structure
+- [ ] T074: Add search/filter as user types after "/"
+- [ ] T075: Style menu items per UX Section 4.5 (44px height, hover states)
+- [ ] T076: Add mobile adaptation (full-width bottom sheet, 52px touch targets)
+- [ ] T077: Write unit tests for slash command parsing and insertion
 
 **Acceptance Criteria:**
 
@@ -234,61 +292,55 @@
 
 ---
 
-#### **MS-007:** AI Autocomplete Integration
+#### **MS-008:** AI Autocomplete UI (Week 2)
 
-**Goal:** Implement GPT-4.1 nano autocomplete with dictionary fallback
+**Goal:** Implement autocomplete UI with mock AI responses and dictionary fallback
 
 **Tasks:**
 
-- T060: Create POST /api/ai/autocomplete endpoint with token validation
-- T061: Implement OpenAI GPT-4.1 nano integration with <200ms target
-- T062: Add request throttling (max 1 request per 3 seconds per user)
-- T063: Implement quota tracking in Firestore user document
-- T064: Create GET /api/users/quota endpoint for quota checking
-- T065: Load 5,000+ nursing dictionary (nursing-terms.json) into memory
-- T066: Implement dictionary prefix matching for offline/over-quota fallback
-- T067: Create useAutocomplete hook with AI/dictionary source detection
-- T068: Build AutocompletePopup component (300px width, 5 suggestions max)
-- T069: Add suggestion source badges ("AI" blue / "Dictionary" gray)
-- T070: Implement Tab/Enter to accept suggestion
-- T071: Add debouncing (150ms) for autocomplete requests
-- T072: Handle API timeout (>500ms) with dictionary fallback
+- [ ] T078: Create AutocompletePopup component (300px width, 5 suggestions max)
+- [ ] T079: Create useAutocomplete hook with mock AI/dictionary source detection
+- [ ] T080: Load sample nursing dictionary (500 terms for development)
+- [ ] T081: Implement dictionary prefix matching for offline/over-quota fallback
+- [ ] T082: Add suggestion source badges ("AI" blue / "Dictionary" gray)
+- [ ] T083: Implement Tab/Enter to accept suggestion
+- [ ] T084: Add debouncing (150ms) for autocomplete requests
+- [ ] T085: Handle mock API timeout with dictionary fallback
+- [ ] T086: Create quota tracking UI with mock data
+- [ ] T087: Write unit tests for autocomplete hook and popup
 
 **Acceptance Criteria:**
 
-- [ ] AI suggestions appear within 200ms of typing (FR-001)
-- [ ] Dictionary fallback works offline (FR-002)
-- [ ] Dictionary fallback works when quota exceeded (FR-002)
-- [ ] Quota badge updates after each AI request (FR-027)
-- [ ] Request throttling enforced (1 per 3 seconds)
+- [ ] Mock AI suggestions appear within 200ms of typing (FR-001)
+- [ ] Dictionary fallback works when simulating offline (FR-002)
+- [ ] Dictionary fallback works when simulating quota exceeded (FR-002)
+- [ ] Quota badge updates after each mock AI request (FR-027)
 
 **Verification:**
 
-- Type "met" and verify suggestions like "metoprolol", "metformin" appear
-- Exceed quota and verify seamless switch to dictionary mode
-- Disconnect network and verify dictionary autocomplete still works
-- Time AI response and confirm <200ms typical latency
+- Type "met" and verify mock suggestions appear
+- Simulate quota exceeded and verify seamless switch to dictionary mode
+- Simulate offline and verify dictionary autocomplete still works
 
 ---
 
-### Phase 3: Note Management & Sync (Week 3)
+#### **MS-009:** Note CRUD UI (Week 2)
 
-#### **MS-008:** Note CRUD Operations
-
-**Goal:** Complete note library with create, read, update, delete functionality
+**Goal:** Complete note library with create, read, update, delete functionality (mock data)
 
 **Tasks:**
 
-- T073: Create Notes Library page layout with header, filter bar, note cards
-- T074: Build NoteCard component with title, preview, category badge, date, sync status
-- T075: Implement "New Note" button opening blank editor (FR-006)
-- T076: Implement note list with grid/list view toggle (FR-007)
-- T077: Implement click-to-open note in editor (FR-008)
-- T078: Add inline note title renaming (FR-010)
-- T079: Implement note duplication (FR-011)
-- T080: Add context menu (right-click/long-press) with Rename, Duplicate, Export, Delete
-- T081: Implement soft delete (isDeleted flag, deletedAt timestamp) (FR-009)
-- T082: Create empty state with illustration and "Create Note" CTA (UX Section 4.3)
+- [ ] T088: Create Notes Library page layout with header, filter bar, note cards
+- [ ] T089: Build NoteCard component with title, preview, category badge, date, sync status
+- [ ] T090: Implement "New Note" button opening blank editor (FR-006)
+- [ ] T091: Implement note list with grid/list view toggle (FR-007)
+- [ ] T092: Implement click-to-open note in editor (FR-008)
+- [ ] T093: Add inline note title renaming (FR-010)
+- [ ] T094: Implement note duplication (FR-011)
+- [ ] T095: Add context menu (right-click/long-press) with Rename, Duplicate, Export, Delete
+- [ ] T096: Implement soft delete (isDeleted flag, deletedAt timestamp) (FR-009)
+- [ ] T097 [SA]: Create empty state with illustration and "Create Note" CTA (UX Section 4.3)
+- [ ] T098: Write unit tests for note card and library components
 
 **Acceptance Criteria:**
 
@@ -306,19 +358,20 @@
 
 ---
 
-#### **MS-009:** Note Organization
+#### **MS-010:** Note Organization UI (Week 2-3)
 
-**Goal:** Implement category filtering, search, and sorting
+**Goal:** Implement category filtering, search, and sorting with mock data
 
 **Tasks:**
 
-- T083: Implement category filter dropdown/chips (7 categories) (FR-012)
-- T084: Implement sort options (date created, last modified, alphabetical) (FR-013)
-- T085: Create useNoteSearch hook with real-time search on title and content (FR-014)
-- T086: Build search input with debounced query (300ms)
-- T087: Add "No results" empty state for search (UX Section 10)
-- T088: Add "No notes in [category]" empty state for category filter
-- T089: Persist filter/sort preferences in localStorage
+- [ ] T099: Implement category filter dropdown/chips (7 categories) (FR-012)
+- [ ] T100: Implement sort options (date created, last modified, alphabetical) (FR-013)
+- [ ] T101: Create useNoteSearch hook with real-time search on title and content (FR-014)
+- [ ] T102: Build search input with debounced query (300ms)
+- [ ] T103: Add "No results" empty state for search (UX Section 10)
+- [ ] T104: Add "No notes in [category]" empty state for category filter
+- [ ] T105: Persist filter/sort preferences in localStorage
+- [ ] T106: Write unit tests for search and filter logic
 
 **Acceptance Criteria:**
 
@@ -331,23 +384,24 @@
 
 - Create notes in multiple categories, filter by each
 - Search for partial term in note content, verify results appear
-- Time search with 100 notes, confirm <300ms
+- Time search with 100 mock notes, confirm <300ms
 
 ---
 
-#### **MS-010:** Trash System
+#### **MS-011:** Trash System UI (Week 3)
 
-**Goal:** Implement trash folder with 30-day recovery and permanent deletion
+**Goal:** Implement trash folder with 30-day recovery and permanent deletion UI
 
 **Tasks:**
 
-- T090: Create Trash page with header showing 30-day warning (UX Section 4.7)
-- T091: Build TrashNoteCard with "Deleted X days ago" label
-- T092: Implement "Restore" action to un-delete note (FR-015)
-- T093: Implement "Delete Forever" action with confirmation dialog
-- T094: Add "Empty Trash" button with bulk permanent delete (FR-015)
-- T095: Create trash empty state with empty bin illustration
-- T096: Update notes library to exclude deleted notes from view
+- [ ] T107: Create Trash page with header showing 30-day warning (UX Section 4.7)
+- [ ] T108: Build TrashNoteCard with "Deleted X days ago" label
+- [ ] T109: Implement "Restore" action to un-delete note (FR-015)
+- [ ] T110: Implement "Delete Forever" action with confirmation dialog
+- [ ] T111: Add "Empty Trash" button with bulk permanent delete (FR-015)
+- [ ] T112 [SA]: Create trash empty state with empty bin illustration
+- [ ] T113: Update notes library to exclude deleted notes from view
+- [ ] T114: Write unit tests for trash operations
 
 **Acceptance Criteria:**
 
@@ -364,90 +418,53 @@
 
 ---
 
-#### **MS-011:** Offline Sync & Conflict Resolution
+#### **MS-012:** Settings & Subscription UI (Week 3)
 
-**Goal:** Implement Firestore sync with offline queue and last-write-wins conflict resolution
-
-**Tasks:**
-
-- T097: Create sync queue table in Dexie for offline operations
-- T098: Implement useOnlineStatus hook to detect connectivity changes
-- T099: Create useSyncQueue hook for queuing create/update/delete operations
-- T100: Implement sync worker that processes queue when online
-- T101: Add exponential backoff retry (5s, 15s, 30s, 60s, 120s) for failed syncs
-- T102: Implement last-write-wins conflict detection (compare version and updatedAt)
-- T103: Create VersionSnapshot when conflict detected (snapshotType: "sync_conflict")
-- T104: Display toast notification on conflict resolution ("Version from [device] kept")
-- T105: Update sync status indicator based on queue state
-- T106: Implement auto-sync when network restored
-
-**Acceptance Criteria:**
-
-- [ ] Notes sync to Firestore automatically when online (FR-017)
-- [ ] Offline editing works with all features (FR-018)
-- [ ] Conflicts resolved with last-write-wins algorithm (FR-019)
-- [ ] Overwritten versions preserved as snapshots (FR-020)
-- [ ] 99%+ sync reliability (NFR)
-
-**Verification:**
-
-- Edit note offline, restore network, verify sync completes
-- Edit same note on two devices offline, bring online, verify conflict resolution
-- Check Firestore snapshots collection for conflict record
-
----
-
-### Phase 4: Payment & Polish (Week 4)
-
-#### **MS-012:** Stripe Integration
-
-**Goal:** Implement Pro tier subscription with Stripe checkout, webhooks, and customer portal
+**Goal:** Complete settings page with mock subscription and tier management
 
 **Tasks:**
 
-- T107: Create Stripe account and configure products (Pro Monthly $8.99, Pro Annual $79)
-- T108: Create POST /api/stripe/checkout endpoint for checkout session
-- T109: Create POST /api/stripe/webhook endpoint with signature validation
-- T110: Handle checkout.session.completed webhook (update tier to Pro)
-- T111: Handle customer.subscription.updated webhook (plan changes)
-- T112: Handle customer.subscription.deleted webhook (downgrade to Free)
-- T113: Handle invoice.payment_failed webhook (payment failure handling)
-- T114: Create POST /api/stripe/portal endpoint for customer portal session
-- T115: Build Upgrade Modal component with feature comparison table (UX Section 4.9)
-- T116: Add "Upgrade to Pro" button in settings and quota badge
-- T117: Display subscription status, billing date, payment method in settings (FR-032)
-- T118: Implement tier enforcement in AI autocomplete endpoint
+- [ ] T115: Create Settings page layout with sidebar navigation (desktop) and tabs (mobile)
+- [ ] T116: Build Account section (email, display name, change password link)
+- [ ] T117: Build Subscription section (tier badge, quota bar, upgrade/manage buttons) with mock data
+- [ ] T118: Build Preferences section (theme toggle: Light/Dark/System, auto-save toggle)
+- [ ] T119: Build Data section (export all, delete account with confirmation)
+- [ ] T120: Implement theme switching with system preference detection
+- [ ] T121: Persist theme preference to localStorage
+- [ ] T122: Build Upgrade Modal component with feature comparison table (UX Section 4.9)
+- [ ] T123: Mock Stripe checkout flow (redirect simulation)
+- [ ] T124: Write unit tests for settings components
 
 **Acceptance Criteria:**
 
-- [ ] Free users limited to 100 AI requests/month (FR-027)
-- [ ] Pro users have unlimited AI requests (FR-028)
-- [ ] User can upgrade via Stripe checkout (FR-030)
-- [ ] User can manage subscription via customer portal (FR-031)
-- [ ] Subscription status displays correctly in settings
+- [ ] All settings sections display correctly
+- [ ] Theme changes apply immediately across app
+- [ ] Quota usage bar shows mock data accurately
+- [ ] Upgrade modal displays correctly
 
 **Verification:**
 
-- Test Stripe checkout flow with test card
-- Verify webhook updates user tier in Firestore
-- Confirm AI quota enforced correctly for free tier
+- Toggle theme and verify all pages update
+- Check quota bar reflects mock usage
+- Test upgrade modal display
 
 ---
 
-#### **MS-013:** Onboarding Flow
+#### **MS-013:** Onboarding Flow UI (Week 3)
 
 **Goal:** Implement 2-screen onboarding introducing AI autocomplete and slash commands
 
 **Tasks:**
 
-- T119: Create onboarding route (/onboarding)
-- T120: Build Screen 1: Welcome with feature cards (AI Autocomplete, Slash Commands) (UX Section 4.2)
-- T121: Build Screen 2: Interactive demo with mini-editor for /template
-- T122: Implement demo celebration animation on successful template insertion
-- T123: Track onboarding completion in user document
-- T124: Add in-editor tooltip showing "/" trigger until user uses 5+ times
-- T125: Implement keyboard shortcut cheatsheet (accessible via "?" key)
-- T126: Create persistent UI hint near editor for available commands
+- [ ] T125: Create onboarding route (/onboarding)
+- [ ] T126: Build Screen 1: Welcome with feature cards (AI Autocomplete, Slash Commands) (UX Section 4.2)
+- [ ] T127: Build Screen 2: Interactive demo with mini-editor for /template
+- [ ] T128: Implement demo celebration animation on successful template insertion
+- [ ] T129: Track onboarding completion in localStorage (mock user document)
+- [ ] T130: Add in-editor tooltip showing "/" trigger until user uses 5+ times
+- [ ] T131: Implement keyboard shortcut cheatsheet (accessible via "?" key)
+- [ ] T132: Create persistent UI hint near editor for available commands
+- [ ] T133: Write unit tests for onboarding flow
 
 **Acceptance Criteria:**
 
@@ -464,18 +481,19 @@
 
 ---
 
-#### **MS-014:** Export Functionality
+#### **MS-014:** Export Functionality (Week 3)
 
 **Goal:** Implement note export to Markdown, Plain Text, and bulk ZIP
 
 **Tasks:**
 
-- T127: Implement Tiptap content to Markdown converter
-- T128: Implement Tiptap content to Plain Text converter
-- T129: Add export menu options (Markdown, Plain Text) in note context menu (FR-033)
-- T130: Create download trigger for single note export
-- T131: Implement bulk export to ZIP with notes organized by category (FR-034)
-- T132: Add "Export all notes" button in Settings (UX Section 4.8)
+- [ ] T134 [SA]: Implement Tiptap content to Markdown converter
+- [ ] T135 [SA]: Implement Tiptap content to Plain Text converter
+- [ ] T136: Add export menu options (Markdown, Plain Text) in note context menu (FR-033)
+- [ ] T137: Create download trigger for single note export
+- [ ] T138: Implement bulk export to ZIP with notes organized by category (FR-034)
+- [ ] T139: Add "Export all notes" button in Settings (UX Section 4.8)
+- [ ] T140: Write unit tests for export converters
 
 **Acceptance Criteria:**
 
@@ -492,51 +510,22 @@
 
 ---
 
-#### **MS-015:** Settings Page
-
-**Goal:** Complete settings page with account, subscription, preferences, and data sections
-
-**Tasks:**
-
-- T133: Create Settings page layout with sidebar navigation (desktop) and tabs (mobile)
-- T134: Build Account section (email, display name, change password link)
-- T135: Build Subscription section (tier badge, quota bar, upgrade/manage buttons)
-- T136: Build Preferences section (theme toggle: Light/Dark/System, auto-save toggle)
-- T137: Build Data section (export all, delete account with confirmation)
-- T138: Implement theme switching with system preference detection
-- T139: Persist theme preference to localStorage and user document
-- T140: Implement delete account flow with Firestore and Firebase Auth cleanup
-
-**Acceptance Criteria:**
-
-- [ ] All settings sections display correctly
-- [ ] Theme changes apply immediately across app
-- [ ] Quota usage bar accurate and updates after AI requests
-- [ ] Delete account removes all user data
-
-**Verification:**
-
-- Toggle theme and verify all pages update
-- Check quota bar reflects actual usage
-- Test delete account flow (use test account)
-
----
-
-#### **MS-016:** Responsive Design & Dark Mode
+#### **MS-015:** Responsive Design & Dark Mode (Week 3)
 
 **Goal:** Ensure responsive design across all breakpoints and complete dark mode support
 
 **Tasks:**
 
-- T141 [P]: Implement responsive breakpoints (Mobile <640px, Tablet 640-1023px, Desktop 1024px+)
-- T142 [P]: Implement dark mode color palette (UX Section 2)
-- T143: Adapt navbar for mobile (hamburger menu, condensed logo)
-- T144: Adapt editor toolbar for mobile (formatting in overflow menu)
-- T145: Adapt notes library for mobile (search expands on tap, filters in bottom sheet)
-- T146: Adapt slash command menu for mobile (full-width bottom sheet, 52px items)
-- T147: Adapt settings for mobile (tab navigation instead of sidebar)
-- T148: Test and fix all pages at 320px, 640px, 1024px, 2560px widths
-- T149: Implement prefers-reduced-motion support (UX Section 9)
+- [ ] T141 [P]: Implement responsive breakpoints (Mobile <640px, Tablet 640-1023px, Desktop 1024px+)
+- [ ] T142 [P] [SA]: Implement dark mode color palette (UX Section 2)
+- [ ] T143: Adapt navbar for mobile (hamburger menu, condensed logo)
+- [ ] T144: Adapt editor toolbar for mobile (formatting in overflow menu)
+- [ ] T145: Adapt notes library for mobile (search expands on tap, filters in bottom sheet)
+- [ ] T146: Adapt slash command menu for mobile (full-width bottom sheet, 52px items)
+- [ ] T147: Adapt settings for mobile (tab navigation instead of sidebar)
+- [ ] T148: Test and fix all pages at 320px, 640px, 1024px, 2560px widths
+- [ ] T149: Implement prefers-reduced-motion support (UX Section 9)
+- [ ] T150: Write visual regression tests for responsive layouts
 
 **Acceptance Criteria:**
 
@@ -553,21 +542,22 @@
 
 ---
 
-#### **MS-017:** Accessibility
+#### **MS-016:** Accessibility (Week 3)
 
 **Goal:** Achieve WCAG AA compliance with keyboard navigation and screen reader support
 
 **Tasks:**
 
-- T150 [P]: Add ARIA labels to all interactive elements
-- T151 [P]: Implement logical tab order across all pages
-- T152: Add visible focus indicators to all focusable elements
-- T153: Ensure 4.5:1 minimum contrast ratio for all text
-- T154: Add screen reader announcements for status changes (aria-live)
-- T155: Make slash command menu accessible (ARIA announcements, keyboard nav)
-- T156: Test with VoiceOver (macOS/iOS) and NVDA (Windows)
-- T157: Add alt text to all images and icons
-- T158: Test at 200% browser zoom and fix any layout issues
+- [ ] T151 [P]: Add ARIA labels to all interactive elements
+- [ ] T152 [P]: Implement logical tab order across all pages
+- [ ] T153: Add visible focus indicators to all focusable elements
+- [ ] T154: Ensure 4.5:1 minimum contrast ratio for all text
+- [ ] T155: Add screen reader announcements for status changes (aria-live)
+- [ ] T156: Make slash command menu accessible (ARIA announcements, keyboard nav)
+- [ ] T157: Test with VoiceOver (macOS/iOS) and NVDA (Windows)
+- [ ] T158: Add alt text to all images and icons
+- [ ] T159: Test at 200% browser zoom and fix any layout issues
+- [ ] T160: Run Lighthouse accessibility audit
 
 **Acceptance Criteria:**
 
@@ -584,30 +574,222 @@
 
 ---
 
-### Phase 5: Testing & Deployment
+### Phase 3: Real Backend Integration
 
-#### **MS-018:** Testing Suite
+**Incrementally replace mocks with real integrations. Use feature flags to toggle during transition.**
+
+#### **MS-017:** Supabase Setup (Week 3)
+
+**Goal:** Configure Supabase project with Auth, PostgreSQL, and Row Level Security
+
+**Tasks:**
+
+- [ ] T161: Create Supabase project and configure environment variables
+- [ ] T162: Configure Supabase Client SDK (client-side initialization)
+- [ ] T163: Configure Supabase Admin SDK (server-side for API routes)
+- [ ] T164: Create PostgreSQL tables (users, notes, snapshots) per Tech Specs Section 3
+- [ ] T165: Implement Row Level Security policies per Tech Specs Section 4
+- [ ] T166: Create database indexes for performance
+- [ ] T167: Test RLS policies prevent cross-user data access
+- [ ] T168: Create feature flag to toggle mock vs real Supabase auth
+
+**Acceptance Criteria:**
+
+- [ ] Supabase project fully configured
+- [ ] All tables created with proper schemas
+- [ ] RLS policies enforce user isolation
+- [ ] Feature flag switches between mock and real auth
+
+**Verification:**
+
+- Attempt to access another user's data via direct query (should fail)
+- Toggle feature flag and verify auth switching works
+
+---
+
+#### **MS-018:** Real Authentication Integration (Week 3)
+
+**Goal:** Replace mock auth with real Supabase Auth
+
+**Tasks:**
+
+- [ ] T169: Implement real Supabase signup with email/password
+- [ ] T170: Implement real Supabase login with session management
+- [ ] T171: Implement real password reset email flow
+- [ ] T172: Create POST /api/auth/initialize endpoint for user document creation
+- [ ] T173: Implement session management with secure cookies (24-hour expiry)
+- [ ] T174: Update auth middleware to use real Supabase session
+- [ ] T175: Update AuthProvider to use real Supabase client
+- [ ] T176: Add session expiry handling (prompt re-authentication, preserve local data)
+- [ ] T177: Write integration tests for auth flows
+
+**Acceptance Criteria:**
+
+- [ ] Real signup creates user in Supabase Auth and users table
+- [ ] Real login creates session that persists across browser refresh
+- [ ] Password reset sends real email via Supabase
+- [ ] Protected routes work with real session
+
+**Verification:**
+
+- Create real test account, log in, refresh browser, verify session persists
+- Test password reset flow with real email
+- Verify session expiry prompts re-authentication
+
+---
+
+#### **MS-019:** PowerSync Offline Sync (Week 3-4)
+
+**Goal:** Implement PowerSync for offline-first sync between SQLite and Supabase
+
+**Tasks:**
+
+- [ ] T178: Install and configure PowerSync (@powersync/web)
+- [ ] T179: Create PowerSync schema matching PostgreSQL tables
+- [ ] T180: Configure PowerSync bucket definitions for user data isolation
+- [ ] T181: Replace local storage layer with PowerSync SQLite
+- [ ] T182: Implement useOnlineStatus hook to detect connectivity changes
+- [ ] T183: Create sync status indicator connected to PowerSync state
+- [ ] T184: Implement auto-sync when network restored
+- [ ] T185: Create feature flag to toggle mock vs real sync
+- [ ] T186: Write integration tests for offline/online sync scenarios
+
+**Acceptance Criteria:**
+
+- [ ] Notes save to local SQLite instantly
+- [ ] Notes sync to Supabase automatically when online (FR-017)
+- [ ] Offline editing works with all features (FR-018)
+- [ ] Sync status indicator reflects real state
+
+**Verification:**
+
+- Edit note offline, restore network, verify sync completes
+- Check Supabase database for synced notes
+
+---
+
+#### **MS-020:** Sync Conflict Resolution (Week 4)
+
+**Goal:** Implement last-write-wins conflict resolution with version history
+
+**Tasks:**
+
+- [ ] T187: Implement conflict detection (compare version and updatedAt)
+- [ ] T188: Implement last-write-wins algorithm per Tech Specs Section 7
+- [ ] T189: Create Snapshot when conflict detected (snapshotType: "sync_conflict")
+- [ ] T190: Display toast notification on conflict resolution ("Version from [device] kept")
+- [ ] T191: Implement exponential backoff retry (5s, 15s, 30s, 60s, 120s) for failed syncs
+- [ ] T192: Update sync status indicator based on conflict state
+- [ ] T193: Write integration tests for conflict scenarios
+
+**Acceptance Criteria:**
+
+- [ ] Conflicts resolved with last-write-wins algorithm (FR-019)
+- [ ] Overwritten versions preserved as snapshots (FR-020)
+- [ ] Toast notification shows conflict resolution result
+- [ ] 99%+ sync reliability (NFR)
+
+**Verification:**
+
+- Edit same note on two devices offline, bring online, verify conflict resolution
+- Check snapshots table for conflict record
+
+---
+
+#### **MS-021:** Real AI Integration (Week 4)
+
+**Goal:** Replace mock AI with real OpenAI GPT-4.1 nano autocomplete
+
+**Tasks:**
+
+- [ ] T194: Create POST /api/ai/autocomplete endpoint with token validation
+- [ ] T195: Implement OpenAI GPT-4.1 nano integration with <200ms target
+- [ ] T196: Add request throttling (max 1 request per 3 seconds per user)
+- [ ] T197: Implement quota tracking in Supabase users table
+- [ ] T198: Create GET /api/users/quota endpoint for quota checking
+- [ ] T199: Load full 5,000+ nursing dictionary (nursing-terms.json) into memory
+- [ ] T200: Implement dictionary prefix matching for production fallback
+- [ ] T201: Update useAutocomplete hook to use real API with feature flag
+- [ ] T202: Handle API timeout (>500ms) with dictionary fallback
+- [ ] T203: Write integration tests for AI autocomplete
+
+**Acceptance Criteria:**
+
+- [ ] Real AI suggestions appear within 200ms of typing (FR-001)
+- [ ] Dictionary fallback works offline (FR-002)
+- [ ] Dictionary fallback works when quota exceeded (FR-002)
+- [ ] Quota updates in database after each AI request (FR-027)
+- [ ] Request throttling enforced (1 per 3 seconds)
+
+**Verification:**
+
+- Type "met" with real API and verify suggestions appear
+- Exceed quota and verify seamless switch to dictionary mode
+- Time AI response and confirm <200ms typical latency
+
+---
+
+#### **MS-022:** Stripe Integration (Week 4)
+
+**Goal:** Implement Pro tier subscription with Stripe checkout, webhooks, and customer portal
+
+**Tasks:**
+
+- [ ] T204: Create Stripe account and configure products (Pro Monthly $8.99, Pro Annual $79)
+- [ ] T205: Create POST /api/stripe/checkout endpoint for checkout session
+- [ ] T206: Create POST /api/stripe/webhook endpoint with signature validation
+- [ ] T207: Handle checkout.session.completed webhook (update tier to Pro)
+- [ ] T208: Handle customer.subscription.updated webhook (plan changes)
+- [ ] T209: Handle customer.subscription.deleted webhook (downgrade to Free)
+- [ ] T210: Handle invoice.payment_failed webhook (payment failure handling)
+- [ ] T211: Create POST /api/stripe/portal endpoint for customer portal session
+- [ ] T212: Update Settings subscription section with real Stripe data
+- [ ] T213: Implement tier enforcement in AI autocomplete endpoint
+- [ ] T214: Create feature flag to toggle mock vs real Stripe
+- [ ] T215: Write integration tests for Stripe webhooks
+
+**Acceptance Criteria:**
+
+- [ ] Free users limited to 100 AI requests/month (FR-027)
+- [ ] Pro users have unlimited AI requests (FR-028)
+- [ ] User can upgrade via real Stripe checkout (FR-030)
+- [ ] User can manage subscription via customer portal (FR-031)
+- [ ] Subscription status displays correctly from Stripe
+
+**Verification:**
+
+- Test Stripe checkout flow with test card
+- Verify webhook updates user tier in Supabase
+- Confirm AI quota enforced correctly for free tier
+
+---
+
+### Phase 4: Testing & Deployment
+
+#### **MS-023:** Testing Suite (Week 4)
 
 **Goal:** Comprehensive test coverage for critical paths
 
 **Tasks:**
 
-- T159: Write unit tests for slash command parser and template insertion
-- T160: Write unit tests for autocomplete hook (AI and dictionary modes)
-- T161: Write unit tests for sync queue and conflict resolution logic
-- T162: Write unit tests for Zod validation schemas
-- T163: Write E2E test: signup → onboarding → create note → save flow
-- T164: Write E2E test: offline editing → reconnect → sync verification
-- T165: Write E2E test: slash command insertion (/template, /formula)
-- T166: Write E2E test: AI autocomplete flow and quota enforcement
-- T167: Write E2E test: Stripe checkout and subscription upgrade
-- T168: Set up GitHub Actions CI for test runs on PR
+- [ ] T216: Write unit tests for slash command parser and template insertion
+- [ ] T217: Write unit tests for autocomplete hook (AI and dictionary modes)
+- [ ] T218: Write unit tests for sync queue and conflict resolution logic
+- [ ] T219 [SA]: Write unit tests for Zod validation schemas
+- [ ] T220: Write E2E test: signup → onboarding → create note → save flow
+- [ ] T221: Write E2E test: offline editing → reconnect → sync verification
+- [ ] T222: Write E2E test: slash command insertion (/template, /formula)
+- [ ] T223: Write E2E test: AI autocomplete flow and quota enforcement
+- [ ] T224: Write E2E test: Stripe checkout and subscription upgrade
+- [ ] T225: Set up GitHub Actions CI for test runs on PR
+- [ ] T226: Ensure mocks remain available for test environment
 
 **Acceptance Criteria:**
 
 - [ ] All unit tests pass
 - [ ] All E2E tests pass on Chromium, Firefox, WebKit
 - [ ] CI runs tests on every PR
+- [ ] Mocks work correctly in test environment
 - [ ] Critical paths have test coverage
 
 **Verification:**
@@ -618,20 +800,20 @@
 
 ---
 
-#### **MS-019:** Performance Optimization
+#### **MS-024:** Performance Optimization (Week 4)
 
 **Goal:** Meet all Core Web Vitals and performance targets
 
 **Tasks:**
 
-- T169: Implement code splitting with dynamic imports for heavy components
-- T170: Add lazy loading for notes library (virtual scrolling if >100 notes)
-- T171: Optimize images with Next.js Image component
-- T172: Configure service worker caching strategies (NetworkFirst for API, CacheFirst for assets)
-- T173: Run Lighthouse audit and address any issues
-- T174: Verify FCP <1.5s, LCP <2.5s, TTI <3.5s, CLS <0.1 (Tech Specs Section 10)
-- T175: Profile and optimize Tiptap editor for 50,000 character documents
-- T176: Verify client-side memory stays under 150MB with 20 notes loaded
+- [ ] T227: Implement code splitting with dynamic imports for heavy components
+- [ ] T228: Add lazy loading for notes library (virtual scrolling if >100 notes)
+- [ ] T229: Optimize images with Next.js Image component
+- [ ] T230: Configure service worker caching strategies (NetworkFirst for API, CacheFirst for assets)
+- [ ] T231: Run Lighthouse audit and address any issues
+- [ ] T232: Verify FCP <1.5s, LCP <2.5s, TTI <3.5s, CLS <0.1 (Tech Specs Section 10)
+- [ ] T233: Profile and optimize Tiptap editor for 50,000 character documents
+- [ ] T234: Verify client-side memory stays under 150MB with 20 notes loaded
 
 **Acceptance Criteria:**
 
@@ -648,22 +830,23 @@
 
 ---
 
-#### **MS-020:** Deployment & Monitoring
+#### **MS-025:** Deployment & Monitoring (Week 4)
 
 **Goal:** Deploy to Vercel with monitoring, error tracking, and cost alerts
 
 **Tasks:**
 
-- T177: Configure Vercel project with environment variables
-- T178: Set up custom domain and SSL certificate
-- T179: Deploy production build to Vercel
-- T180: Configure Sentry error tracking
-- T181: Configure Vercel Analytics for user behavior
-- T182: Set up monitoring alerts for error rates >5%
-- T183: Set up cost alerts at $50, $75, $100 thresholds
-- T184: Create monitoring dashboard for AI API costs per tier
-- T185: Configure Firebase automatic backup
-- T186: Document rollback procedure
+- [ ] T235: Configure Vercel project with environment variables
+- [ ] T236: Set up custom domain and SSL certificate
+- [ ] T237: Deploy production build to Vercel
+- [ ] T238: Configure Sentry error tracking
+- [ ] T239: Configure Vercel Analytics for user behavior
+- [ ] T240: Set up monitoring alerts for error rates >5%
+- [ ] T241: Set up cost alerts at $50, $75, $100 thresholds
+- [ ] T242: Create monitoring dashboard for AI API costs per tier
+- [ ] T243: Configure Supabase automatic backup
+- [ ] T244: Document rollback procedure
+- [ ] T245: Remove or disable mock feature flags for production
 
 **Acceptance Criteria:**
 
@@ -671,6 +854,7 @@
 - [ ] Errors reported to Sentry
 - [ ] Analytics tracking user sessions
 - [ ] Cost alerts configured
+- [ ] Mocks disabled in production
 
 **Verification:**
 
@@ -682,77 +866,252 @@
 
 ## Dependencies and Execution Order
 
-**Milestone Dependencies:**
+**Phase Dependencies:**
 
-- MS-002 depends on MS-001 (Firebase requires initialized project)
-- MS-003 depends on MS-001 (Types require TypeScript setup)
-- MS-004 depends on MS-003 (Editor needs types defined)
-- MS-005 depends on MS-003 and MS-004 (Auto-save needs Dexie types and editor)
-- MS-006 depends on MS-004 (Slash commands are Tiptap extension)
-- MS-007 depends on MS-002 and MS-006 (AI needs auth and editor)
-- MS-008 depends on MS-005 (CRUD needs local storage)
-- MS-009 depends on MS-008 (Organization needs note library)
-- MS-010 depends on MS-008 (Trash needs note CRUD)
-- MS-011 depends on MS-005 and MS-008 (Sync needs local storage and CRUD)
-- MS-012 depends on MS-002 and MS-007 (Stripe needs auth and AI quota)
-- MS-013 depends on MS-006 (Onboarding demos slash commands)
-- MS-014 depends on MS-008 (Export needs note CRUD)
-- MS-015 depends on MS-012 (Settings shows subscription)
-- MS-016 depends on MS-004 through MS-015 (Responsive applies to all)
-- MS-017 depends on MS-016 (Accessibility on final components)
-- MS-018 depends on all feature milestones (Tests verify features)
-- MS-019 depends on MS-018 (Optimize after tests pass)
-- MS-020 depends on MS-019 (Deploy optimized build)
+- Phase 2 (UI Development) depends on Phase 1 (Foundation & Contracts) for types and mocks
+- Phase 3 (Backend Integration) can begin once core UI is functional (MS-004 through MS-009)
+- Phase 4 (Testing & Deployment) depends on Phase 3 completion
+
+**Milestone Prerequisites:**
+
+Each milestone's Goal and Prerequisite for dependency tracking:
+
+### Phase 1: Foundation & Contracts
+
+| Milestone  | Goal                                | Prerequisite                               |
+| ---------- | ----------------------------------- | ------------------------------------------ |
+| **MS-001** | Environment Setup                   | None (starting point)                      |
+| **MS-002** | Core Type Definitions & Zod Schemas | MS-001 complete                            |
+| **MS-003** | Mock Infrastructure & API Layer     | MS-002 complete (types must exist to mock) |
+
+### Phase 2: UI Development with Mocks
+
+| Milestone  | Goal                          | Prerequisite                           |
+| ---------- | ----------------------------- | -------------------------------------- |
+| **MS-004** | Authentication UI             | MS-003 complete                        |
+| **MS-005** | Tiptap Editor Integration     | MS-003 complete                        |
+| **MS-006** | Auto-Save & Local Storage     | MS-005 (T046-T047) complete            |
+| **MS-007** | Slash Command System          | MS-005 (T046-T047) complete            |
+| **MS-008** | AI Autocomplete UI            | MS-003 complete                        |
+| **MS-009** | Note CRUD UI                  | MS-003 complete                        |
+| **MS-010** | Note Organization UI          | MS-009 (T088-T091) complete            |
+| **MS-011** | Trash System UI               | MS-009 (T088-T091) complete            |
+| **MS-012** | Settings & Subscription UI    | MS-003 complete                        |
+| **MS-013** | Onboarding Flow UI            | MS-003 complete                        |
+| **MS-014** | Export Functionality          | MS-005 complete (needs Tiptap content) |
+| **MS-015** | Responsive Design & Dark Mode | MS-004 through MS-014 complete         |
+| **MS-016** | Accessibility                 | MS-004 through MS-014 complete         |
+
+### Phase 3: Real Backend Integration
+
+| Milestone  | Goal                            | Prerequisite                          |
+| ---------- | ------------------------------- | ------------------------------------- |
+| **MS-017** | Supabase Setup                  | MS-009 complete (core UI works)       |
+| **MS-018** | Real Authentication Integration | MS-017 complete                       |
+| **MS-019** | PowerSync Offline Sync          | MS-017 complete                       |
+| **MS-020** | Sync Conflict Resolution        | MS-019 complete                       |
+| **MS-021** | Real AI Integration             | MS-017 complete (independent of sync) |
+| **MS-022** | Stripe Integration              | MS-018 complete (needs real auth)     |
+
+### Phase 4: Testing & Deployment
+
+| Milestone  | Goal                     | Prerequisite                                |
+| ---------- | ------------------------ | ------------------------------------------- |
+| **MS-023** | Testing Suite            | All feature milestones complete             |
+| **MS-024** | Performance Optimization | MS-023 complete (optimize after tests pass) |
+| **MS-025** | Deployment & Monitoring  | MS-024 complete (deploy optimized build)    |
+
+### Prerequisite Visualization
+
+```
+MS-001 (Environment)
+    │
+    ▼
+MS-002 (Types)
+    │
+    ▼
+MS-003 (Mocks)
+    │
+    ├──────────────────────────────────────────────────┐
+    ▼                                                  ▼
+MS-004 (Auth UI) ‖ MS-005 (Editor) ‖ MS-008 ‖ MS-009 ‖ MS-012 ‖ MS-013
+                       │                    │
+                       ▼                    ▼
+              MS-006 ‖ MS-007        MS-010 ‖ MS-011
+                                            │
+                                            ▼
+                                    MS-014 (Export)
+                                            │
+                                            ▼
+                                    MS-015 ‖ MS-016 (Polish)
+                                            │
+    ┌───────────────────────────────────────┘
+    ▼
+MS-017 (Supabase) ─────────────────┬───────────────────┐
+    │                              │                   │
+    ▼                              ▼                   ▼
+MS-018 (Real Auth)          MS-019 (PowerSync)   MS-021 (Real AI)
+    │                              │
+    ▼                              ▼
+MS-022 (Stripe)             MS-020 (Conflict)
+    │                              │
+    └──────────────┬───────────────┘
+                   ▼
+            MS-023 (Testing)
+                   │
+                   ▼
+            MS-024 (Performance)
+                   │
+                   ▼
+            MS-025 (Deployment)
+```
 
 **Critical Path:**
 
-T001 → T011 → T021 → T033 → T043 → T060 → T073 → T097 → T107 → T177
+T001 → T011 → T024 → T036 → T046 → T067 → T088 → T161 → T178 → T194 → T235
 
-(Project setup → Firebase → Types → Editor → Auto-save → AI → Note CRUD → Sync → Stripe → Deploy)
+(Setup → Types → Mocks → Auth UI → Editor → Slash Commands → Notes UI → Supabase → PowerSync → AI → Deploy)
 
 ---
 
 ## Parallel Opportunities
 
-**Parallel Milestones:**
+**Parallel Execution Groups:**
 
-- MS-001, MS-002, MS-003 can have some parallel work (different domains)
-- MS-008, MS-009, MS-010 can be parallelized (different note management features)
-- MS-013, MS-014 can run in parallel (independent features)
+The following milestones and tasks can run simultaneously (no dependencies between items in each group):
 
-**Parallel Tasks Within Milestone:**
+### Week 1: Foundation Parallel Groups
 
-- T001, T002, T003 (MS-001 setup tasks)
-- T021, T022, T023, T024 (MS-003 type definitions)
-- T141, T142 (MS-016 responsive and dark mode base)
-- T150, T151 (MS-017 accessibility base)
+**Group 1A - Environment Setup (MS-001 internal):**
 
-**Resource Allocation:**
+- T001: Initialize Next.js project
+- T002: Configure Tailwind CSS
+- T003: Set up ESLint/Prettier/TypeScript
 
-- Frontend focus: T033-T042, T073-T089, T119-T126, T133-T149
-- Backend focus: T011-T020, T060-T072, T097-T118
-- Full-stack: T050-T059, T159-T186
+**Group 1B - Type Definitions (MS-002 internal):**
+
+- T011: UserProfile type
+- T012: Note type
+- T013: Snapshot type
+- T014: Category enum
+
+**Group 1C - Mock Infrastructure (MS-003 internal):**
+
+- T024: Set up MSW
+- T025: Mock data generators
+- T026: Mock user data
+- T027: Mock notes collection
+
+### Week 1-2: UI Development Parallel Groups
+
+**Group 2A - Auth + Editor (run simultaneously):**
+
+- MS-004: Authentication UI
+- MS-005: Tiptap Editor Integration
+
+**Group 2B - Editor Extensions (after MS-005 T046-T047):**
+
+- MS-006: Auto-Save & Local Storage
+- MS-007: Slash Command System
+
+**Group 2C - AI Autocomplete (MS-008 internal):**
+
+- Backend tasks: T080, T081, T085
+- Frontend tasks: T078, T079, T082-T084, T086-T087
+
+### Week 2-3: Feature UI Parallel Groups
+
+**Group 3A - Note Features (after MS-009 T088-T091):**
+
+- MS-010: Note Organization UI
+- MS-011: Trash System UI
+
+**Group 3B - Settings + Onboarding + Export (run simultaneously):**
+
+- MS-012: Settings & Subscription UI
+- MS-013: Onboarding Flow UI
+- MS-014: Export Functionality
+
+### Week 3: Polish Parallel Groups
+
+**Group 4A - Responsive + Accessibility (run simultaneously):**
+
+- MS-015: Responsive Design & Dark Mode
+- MS-016: Accessibility
+
+### Week 3-4: Backend Parallel Groups
+
+**Group 5A - Independent Backend Systems:**
+
+- MS-017: Supabase Setup
+- MS-021: Real AI Integration
+
+### Week 4: Testing Parallel Groups
+
+**Group 6A - Test Types (MS-023 internal):**
+
+- Unit Tests: T216-T219
+- E2E Tests: T220-T224
+
+---
+
+**Subagent Tasks (SA):**
+
+The following 16 tasks are isolated and can be delegated to subagents without context:
+
+| Milestone | SA Tasks | Task IDs             |
+| --------- | -------- | -------------------- |
+| MS-002    | 8        | T011-T014, T018-T021 |
+| MS-007    | 2        | T070, T071           |
+| MS-009    | 1        | T097                 |
+| MS-011    | 1        | T112                 |
+| MS-014    | 2        | T134, T135           |
+| MS-015    | 1        | T142                 |
+| MS-023    | 1        | T219                 |
+| **Total** | **16**   |                      |
+
+**UI vs Backend Parallelization:**
+
+After Phase 1 completion, UI development (Phase 2) and backend preparation can overlap:
+
+- Team A: Continue UI development (MS-004 through MS-016)
+- Team B: Start Supabase setup (MS-017) once MS-009 is in progress
+
+**Mock Preservation:**
+
+- Mocks developed in MS-003 remain available throughout project
+- Feature flags allow gradual migration from mocks to real backends
+- Tests continue using mocks even after real backends deployed
 
 ---
 
 ## Implementation Strategy
 
-1. **Week 1 Priority:** Complete MS-001 through MS-003 (foundation)
-2. **Week 2 Priority:** Complete MS-004 through MS-007 (editor and AI)
-3. **Week 3 Priority:** Complete MS-008 through MS-011 (note management and sync)
-4. **Week 4 Priority:** Complete MS-012 through MS-020 (payment, polish, deploy)
+1. **Week 1 Priority:** Complete MS-001 (Environment), MS-002 (Types), MS-003 (Mocks)
+2. **Week 2 Priority:** Complete MS-004 through MS-009 (Core UI with mocks)
+3. **Week 3 Priority:** Complete MS-010 through MS-016 (Remaining UI), start MS-017 through MS-019 (Backend)
+4. **Week 4 Priority:** Complete MS-020 through MS-025 (Integration, Testing, Deployment)
 
-**TDD Approach:**
+**Contract-First Approach:**
 
-- Write types and interfaces first (MS-003)
-- Write unit tests for logic-heavy modules before implementation
-- E2E tests written after feature implementation verified manually
+- Zod schemas are single source of truth
+- Types derived from schemas (no duplication)
+- Mocks validate against schemas
+- API responses validated at runtime
 
-**Offline-First Strategy:**
+**Mock-Driven Development:**
 
-- Dexie (local) is source of truth
-- Firestore is sync layer
-- All features must work offline first, then add sync
+- Build complete UI before touching real backends
+- Mocks include realistic delays, errors, and edge cases
+- Feature flags control mock vs real switching
+- Mocks preserved for development and testing
+
+**Incremental Integration:**
+
+- Replace one mock at a time with real implementation
+- Feature flags enable gradual rollout
+- Rollback to mocks if issues discovered
+- Integration tests verify each replacement
 
 ---
 
@@ -760,13 +1119,14 @@ T001 → T011 → T021 → T033 → T043 → T060 → T073 → T097 → T107 →
 
 | Risk ID | Description                             | Affected Milestone(s) | Mitigation Plan                                           | Owner    | Status         |
 | ------- | --------------------------------------- | --------------------- | --------------------------------------------------------- | -------- | -------------- |
-| R001    | OpenAI API unavailability               | MS-007                | Dictionary fallback implemented as primary offline mode   | Dev Team | ⏳ Not Started |
-| R002    | Stripe webhook signature validation     | MS-012                | Use Stripe CLI for local testing before production        | Dev Team | ⏳ Not Started |
-| R003    | Tiptap performance with large documents | MS-004                | Virtualization and lazy loading for 50k+ chars            | Dev Team | ⏳ Not Started |
-| R004    | Sync conflicts data loss                | MS-011                | Comprehensive snapshot system with conflict detection     | Dev Team | ⏳ Not Started |
-| R005    | PWA installation discoverability        | MS-001                | Clear install prompts and video tutorials                 | Dev Team | ⏳ Not Started |
-| R006    | Firebase service outages                | MS-011                | Offline-first architecture ensures local functionality    | Dev Team | ⏳ Not Started |
-| R007    | AI hallucination (incorrect terms)      | MS-007                | Validate AI suggestions against dictionary before display | Dev Team | ⏳ Not Started |
+| R001    | OpenAI API unavailability               | MS-021                | Dictionary fallback implemented; mocks available          | Dev Team | ⏳ Not Started |
+| R002    | Stripe webhook signature validation     | MS-022                | Use Stripe CLI for local testing; mock webhooks available | Dev Team | ⏳ Not Started |
+| R003    | Tiptap performance with large documents | MS-005                | Early performance testing with 50k char docs              | Dev Team | ⏳ Not Started |
+| R004    | Sync conflicts data loss                | MS-020                | Comprehensive snapshot system; mock conflict scenarios    | Dev Team | ⏳ Not Started |
+| R005    | PWA installation discoverability        | MS-001                | Clear install prompts; test on multiple platforms         | Dev Team | ⏳ Not Started |
+| R006    | Supabase service outages                | MS-019                | Offline-first with PowerSync; mocks as fallback           | Dev Team | ⏳ Not Started |
+| R007    | AI hallucination (incorrect terms)      | MS-021                | Validate against dictionary; test with mock edge cases    | Dev Team | ⏳ Not Started |
+| R008    | Mock/Real integration gaps              | MS-017-022            | Schema validation ensures mock/real parity                | Dev Team | ⏳ Not Started |
 
 **Status Legend:**
 

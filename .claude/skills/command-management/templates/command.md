@@ -16,7 +16,7 @@ Important Instructions:
 name: <command-name>
 description: <brief description of what the command does>
 allowed-tools: <comma-separated list of tools>
-argument-hint: <arg1-name> <arg2-name> <arg3-name>
+argument-hint: <argument-hint>
 model: <haiku|sonnet|opus>
 
 ---

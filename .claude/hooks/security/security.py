@@ -4,6 +4,7 @@ PreToolUse Hook: Security validation for dangerous commands and paths.
 
 Blocks critical system-damaging operations using exit code 2.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -30,22 +31,21 @@ CRITICAL_PATHS = {
     "id_ed25519",
 }
 
-# Critical commands that can damage the system
-CRITICAL_COMMANDS = {
-    "rm -rf /",      # Wipes root filesystem
-    "rm -rf /*",     # Same effect
-    "rm -rf /etc",   # Destroys system config
-    "rm -rf /boot",  # Destroys bootloader
-    "rm -rf /sys",   # Destroys system interface
-    "dd if=/dev/zero of=/dev/",  # Overwrites devices
-    "mkfs.ext",      # Formats filesystems
-    "mkfs.xfs",
-    "mkfs.btrfs",
-    "> /dev/sd",     # Overwrites disk
-    "> /dev/nvme",
-    ":(){ :|:& };:", # Fork bomb
-    "chmod -r 777 /", # Destroys permissions
-}
+# Critical command patterns (regex) - tuples of (pattern, description)
+# Uses regex to avoid false positives with absolute paths
+CRITICAL_COMMAND_PATTERNS = [
+    (r"rm\s+-[rf]+\s+/\s*$", "rm -rf / (wipes root filesystem)"),
+    (r"rm\s+-[rf]+\s+/\*", "rm -rf /* (wipes root contents)"),
+    (r"rm\s+-[rf]+\s+/etc(?:\s|$)", "rm -rf /etc (destroys system config)"),
+    (r"rm\s+-[rf]+\s+/boot(?:\s|$)", "rm -rf /boot (destroys bootloader)"),
+    (r"rm\s+-[rf]+\s+/sys(?:\s|$)", "rm -rf /sys (destroys system interface)"),
+    (r"dd\s+if=/dev/zero\s+of=/dev/", "dd to device (overwrites disk)"),
+    (r"mkfs\.(ext|xfs|btrfs)", "mkfs (formats filesystem)"),
+    (r">\s*/dev/sd", "redirect to disk device"),
+    (r">\s*/dev/nvme", "redirect to nvme device"),
+    (r":\(\)\{\s*:\|:&\s*\};:", "fork bomb"),
+    (r"chmod\s+-[rR]+\s+777\s+/\s*$", "chmod 777 / (destroys permissions)"),
+]
 
 # Safe directories (operations here are allowed)
 SAFE_DIRECTORIES = {"/.claude/", "/src/", "/tests/"}
@@ -77,15 +77,14 @@ def check_dangerous_command(command: str) -> str | None:
     if not command:
         return None
 
-    cmd_lower = command.lower()
-    for pattern in CRITICAL_COMMANDS:
-        if pattern.lower() in cmd_lower:
-            return f"System-damaging command detected: {pattern}"
+    for pattern, description in CRITICAL_COMMAND_PATTERNS:
+        if re.search(pattern, command, re.IGNORECASE):
+            return f"System-damaging command detected: {description}"
 
     return None
 
 
-def validate_security(input_data: dict) -> None:
+def validate_security(input_data: dict | None) -> None:
     """
     Validate tool input for security risks.
 

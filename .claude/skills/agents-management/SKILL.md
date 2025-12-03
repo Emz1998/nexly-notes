@@ -40,6 +40,7 @@ description: Use PROACTIVELY this agent when you need to design and create optim
 - Include all required sections: Core Responsibilities, Tasks, Implementation Strategy, Constraints, Success Criteria
 - Description must start with "Use PROACTIVELY this agent when..." for automatic triggering
 - Always provide comprehensive reports back to main agent upon task completion
+- Consolidate tasks as much as possible for more efficient execution.
 
 ## Constraints
 

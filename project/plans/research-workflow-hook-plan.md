@@ -190,7 +190,7 @@ Use `research_mode` namespace in `cache.json`:
   "research_mode": {
     "is_active": true,
     "session_id": "abc-123",
-    "research_file_path": "project/MS-001:Foundation/researches/research_abc-123_120125.md"
+    "research_file_path": "project/MS-001_Foundation/researches/research_abc-123_120125.md"
   }
 }
 ```

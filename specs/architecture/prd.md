@@ -30,7 +30,7 @@
   2. Achieve 99%+ sync reliability with zero data loss during offline clinical rotations, measured by successful sync operations / total sync attempts [Priority: P0]
   3. Reach 60%+ slash command adoption rate within first week of user onboarding, measured as percentage of users who execute at least one slash command in first 7 days [Priority: P0]
   4. Convert 5% of free users to Pro tier within 3 months of launch [Priority: P1]
-  5. Maintain infrastructure costs under $85/month while supporting 1,000+ active users (breakdown: Vercel $20, Firebase $35, OpenAI API $25, monitoring $5) [Priority: P1]
+  5. Maintain infrastructure costs under $85/month while supporting 1,000+ active users (breakdown: Vercel $20, Supabase $25, OpenAI API $25, PowerSync $10, monitoring $5) [Priority: P1]
   6. Achieve 40%+ AI autocomplete acceptance rate, calculated as (accepted suggestions / total suggestions shown) per user session [Priority: P1]
   7. Launch fully functional PWA with cross-platform support (desktop, tablet, mobile) [Priority: P0]
   8. Build foundation for future NCLEX prep integration and community features [Priority: P2]
@@ -98,9 +98,9 @@ As a nursing student in a clinical rotation with spotty WiFi, I want my notes to
 
 **Acceptance Scenarios:**
 
-- **Given I'm editing a note offline, when 30 seconds pass, then the note auto-saves to local IndexedDB storage**
+- **Given I'm editing a note offline, when 30 seconds pass, then the note auto-saves to local SQLite storage (via PowerSync)**
 - **Given I close my laptop during clinical without saving manually, when I reopen the app, then my latest changes are preserved**
-- **Given I regain internet connectivity after being offline, when the app detects connection, then all local changes sync to Firestore automatically**
+- **Given I regain internet connectivity after being offline, when the app detects connection, then all local changes sync to Supabase automatically**
 - **Given I edit the same note on my phone and laptop while offline, when both devices come online, then the system applies last-write-wins resolution (most recent timestamp wins) and preserves the overwritten version in version history**
 - **Given a sync conflict occurs, when the conflict is resolved, then I see a notification indicating which device's version was kept and can access the alternate version via version history**
 
@@ -191,8 +191,8 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 
 #### Auto-Save and Sync
 
-- **FR-016:** Notes must auto-save to local IndexedDB storage every 30 seconds without requiring manual user action, with visual "Saved" indicator.
-- **FR-017:** The system must sync local notes to Firebase Firestore automatically when internet connectivity is available.
+- **FR-016:** Notes must auto-save to local SQLite storage (via PowerSync) every 30 seconds without requiring manual user action, with visual "Saved" indicator.
+- **FR-017:** The system must sync local notes to Supabase PostgreSQL automatically when internet connectivity is available.
 - **FR-018:** Offline editing must be fully functional with all core features (editor, slash commands, dictionary autocomplete, note CRUD) available without internet.
 - **FR-019:** The system must detect sync conflicts when the same note is edited on multiple devices while offline and resolve using last-write-wins algorithm (most recent timestamp wins).
 - **FR-020:** When sync conflicts occur, the system must preserve the overwritten version in version history and display a notification to the user indicating which version was kept.
@@ -200,9 +200,9 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 
 #### Authentication and Account Management
 
-- **FR-022:** Users must be able to create accounts using email/password authentication via Firebase Auth with minimum password requirements (8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character).
+- **FR-022:** Users must be able to create accounts using email/password authentication via Supabase Auth with minimum password requirements (8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character).
 - **FR-023:** Users must be able to log in with email/password credentials, with session persistence across browser sessions.
-- **FR-024:** Users must be able to reset forgotten passwords via email reset link sent through Firebase Auth.
+- **FR-024:** Users must be able to reset forgotten passwords via email reset link sent through Supabase Auth.
 - **FR-025:** The system must enforce session timeout after 24 hours of inactivity, requiring re-authentication while preserving local note data.
 - **FR-026:** The system must support concurrent sessions (same user logged in on multiple devices) with proper sync conflict resolution.
 
@@ -242,15 +242,15 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
   - Support 1,000+ concurrent active users on MVP infrastructure
   - Handle 10,000+ AI autocomplete requests per day
   - Scale to 10,000+ total users within 6 months post-launch
-  - Firestore must accommodate 100,000+ note documents efficiently
+  - Supabase PostgreSQL must accommodate 100,000+ note records efficiently
   - API endpoints must support rate limiting of 60 requests per minute per user (excluding AI requests which have quota limits)
 
 - **Security Requirements:**
 
-  - All user authentication must use Firebase Auth with encrypted password storage
+  - All user authentication must use Supabase Auth with encrypted password storage
   - Passwords must meet minimum requirements: 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
   - API endpoints must validate user tier and quota before processing AI requests
-  - User notes must be stored with proper Firestore security rules (users can only access their own notes)
+  - User notes must be stored with proper PostgreSQL Row Level Security policies (users can only access their own notes)
   - HTTPS must be enforced for all client-server communication
   - Environment variables containing API keys must never be exposed to client-side code
   - Stripe webhook signatures must be validated to prevent payment fraud
@@ -292,9 +292,9 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 - **Language:** TypeScript
 - **Editor:** Tiptap (ProseMirror-based rich text editor)
 - **Styling:** Tailwind CSS v4 with Shadcn UI components
-- **Authentication:** Firebase Auth (email/password)
-- **Backend/Database:** Firebase Firestore (cloud sync)
-- **Local Storage:** Dexie.js (IndexedDB wrapper for offline data)
+- **Authentication:** Supabase Auth (email/password)
+- **Backend/Database:** Supabase PostgreSQL (cloud sync)
+- **Local Storage:** PowerSync (SQLite-based offline-first sync)
 - **AI Integration:** OpenAI GPT-4.1 nano API (medical autocomplete)
 - **Payment Processing:** Stripe (subscription billing and checkout)
 - **Deployment:** Vercel (Next.js hosting with serverless API routes)
@@ -308,13 +308,13 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 
 **Dependencies:**
 
-- Firebase project configured with Firestore and Authentication enabled
+- Supabase project configured with PostgreSQL and Authentication enabled
 - OpenAI API access with GPT-3.5-turbo for autocomplete functionality
 - Stripe account for payment processing with webhook endpoints configured
 - Vercel account for deployment and serverless function hosting
 - Domain name and SSL certificate for production deployment
 - 5,000+ term nursing dictionary dataset (JSON format) sourced from OpenMD Nursing Terminology Database under CC BY-SA 4.0 license for offline autocomplete
-- Email service for password reset functionality (Firebase Auth handles this)
+- Email service for password reset functionality (Supabase Auth handles this)
 - Sentry account for error tracking and monitoring
 - Vercel Analytics enabled for user behavior tracking
 
@@ -326,7 +326,7 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 - Users will primarily access the app on laptops/tablets during study sessions
 - Free tier users will average 50 AI requests/month (under 100 quota)
 - 5% conversion rate from free to Pro tier is achievable with clear value demonstration
-- Infrastructure costs will remain under $85/month for 1,000 active users (breakdown: Vercel $20, Firebase $35, OpenAI $25, monitoring $5)
+- Infrastructure costs will remain under $85/month for 1,000 active users (breakdown: Vercel $20, Supabase $25, OpenAI $25, PowerSync $10, monitoring $5)
 - Nursing terminology remains relatively stable (dictionary updates quarterly)
 - Students prefer speed and simplicity over complex formatting features
 - Users will primarily edit notes individually (no real-time collaborative editing required for MVP)
@@ -378,9 +378,9 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 **Mitigation Strategy:**
 
 - Implement last-write-wins conflict resolution with full version history preservation
-- Store conflicting versions in separate Firestore documents for manual user review
+- Store conflicting versions in PostgreSQL snapshots table for manual user review
 - Display clear conflict notification UI when sync conflicts are detected
-- Auto-backup all notes to Firestore every 5 minutes when online (not just on manual save)
+- Auto-backup all notes to Supabase every 5 minutes when online (not just on manual save)
 - Implement comprehensive sync testing with automated offline/online scenario tests
 - Add manual sync trigger button for users to control sync timing
 
@@ -421,18 +421,18 @@ As a nursing student, I want to create, view, edit, and delete notes seamlessly,
 - Consider backup AI provider (Anthropic Claude, Google Gemini) for future redundancy
 - Design UX so dictionary fallback feels seamless, not like a degraded experience
 
-### Risk 8: Firebase Service Outages Affecting Core Functionality
+### Risk 8: Supabase Service Outages Affecting Core Functionality
 
-**Overview:** Firebase Firestore or Authentication outages could prevent users from logging in, syncing notes, or accessing their data, causing frustration and potential data loss anxiety.
+**Overview:** Supabase PostgreSQL or Authentication outages could prevent users from logging in, syncing notes, or accessing their data, causing frustration and potential data loss anxiety.
 
 **Mitigation Strategy:**
 
-- Ensure full offline-first architecture where all core editing features work without Firebase connection
-- Display clear status messaging when Firebase is unreachable: "Working offline - will sync when connection restored"
+- Ensure full offline-first architecture where all core editing features work without Supabase connection
+- Display clear status messaging when Supabase is unreachable: "Working offline - will sync when connection restored"
 - Implement exponential backoff retry logic for failed sync operations (retry after 5s, 15s, 30s, 60s)
-- Monitor Firebase status dashboard and communicate proactively to users during known outages
-- Maintain local IndexedDB as source of truth, with Firebase as sync layer (not primary storage)
-- Test app behavior during simulated Firebase outages in QA
+- Monitor Supabase status dashboard and communicate proactively to users during known outages
+- Maintain local SQLite (via PowerSync) as source of truth, with Supabase as sync layer (not primary storage)
+- Test app behavior during simulated Supabase outages in QA
 
 ### Risk 9: Medical Terminology Accuracy (AI Hallucinations)
 

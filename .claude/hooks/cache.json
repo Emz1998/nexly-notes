@@ -1,7 +1,7 @@
 {
   "plan_mode": {
     "is_active": false,
-    "session_id": "26d3c6a0-0574-4b2c-b31d-e292a9079630"
+    "session_id": "bfca9241-4de5-4473-a1b7-1714708543e1"
   },
   "research_mode": {
     "is_active": false,
@@ -18,7 +18,13 @@
     "plan_file": ""
   },
   "code_review_mode": {
-    "is_active": true,
+    "is_active": false,
     "session_id": "test-final"
+  },
+  "implement_flow": {
+    "is_active": true,
+    "session_id": "test-456",
+    "current_step": 0,
+    "completed_steps": []
   }
 }

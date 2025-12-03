@@ -120,10 +120,9 @@ nexly-rn/
 
 ## Specs
 
-- **PRD:** `.claude/docs/specs/prd.md`
-- **Tech Specs:** `.claude/docs/specs/tech-specs.md`
-- **UI/UX Specs:** `.claude/docs/specs/ui-ux.md`
-- **QA Specs:** `.claude/docs/specs/qa-specs.md`
+- **PRD:** `specs/prd.md`
+- **Tech Specs:** `specs/tech-specs.md`
+- **UI/UX Specs:** `specs/ux.md`
 
 ## Main Workflow
 
@@ -144,24 +143,23 @@ nexly-rn/
 - Follow the plan strictly. Do not deviate from it.
 - Do not implement tasks that are beyond the scope of your plan
 - NEVER improvise. If you are not sure, stop and say "I'm not sure about this task"
-- Always use the subagents when gathering context
 - Build for an MVP. Do not overcomplicate stuff. Simple/Lean approach is better than complex one
 - We are not under HIPPA/FERPA laws so don't include any context related to it
-- Focus on building the desktop app for now
-- Web is second priority
+- Focus on building the desktop app for now. Web is second priority
 - Write semantic and idiomatic code. Use clear and descriptive names for variables, functions, and classes.
 - Prefer readability over performance and complexity. Write code that is easy to understand and maintain.
+- Trust your capabilities, knowledge, and assumptions. For example, sometimes you already have the answer in your knowledge base or context but decides to document and ask the user for confirmation anyways. Only document stuff that you truly may not know and may forget in the future.
 
 ## Context References
 
 ### Tailwind v4
 
-- Read PROACTIVELY `.claude/context/tw-v4-upgrade-guide.md` for tailwind v4 upgrade guide.
-- Read PROACTIVELY `.claude/context/tw-v4-custom-styles.md` for Tailwind v4 custom styles.
-- Read PROACTIVELY `.claude/context/tw-v4-functions-and-directives.md` for Tailwind v4 functions and directives.
-- Read PROACTIVELY `.claude/context/tw-v4-detecting-classes-in-source-files.md` for Tailwind v4 "Detecting classes in source files".
-- Read PROACTIVELY `.claude/context/tw-v4-theme-variable.md` for Tailwind v4 theme variables.
+- Read PROACTIVELY `.claude/docs/context/tw-v4-upgrade-guide.md` for tailwind v4 upgrade guide.
+- Read PROACTIVELY `.claude/docs/context/tw-v4-custom-styles.md` for Tailwind v4 custom styles.
+- Read PROACTIVELY `.claude/docs/context/tw-v4-functions-and-directives.md` for Tailwind v4 functions and directives.
+- Read PROACTIVELY `.claude/docs/context/tw-v4-detecting-classes-in-source-files.md` for Tailwind v4 "Detecting classes in source files".
+- Read PROACTIVELY `.claude/docs/context/tw-v4-theme-variable.md` for Tailwind v4 theme variables.
 
 ### React 19
 
-- Read PROACTIVELY `.claude/context/react19-upgrade-guide.md` for React 19 upgrade guide.
+- Read PROACTIVELY `.claude/docs/context/react19-upgrade-guide.md` for React 19 upgrade guide.

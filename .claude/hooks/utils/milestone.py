@@ -22,10 +22,10 @@ def get_milestone_info() -> dict:
 
 
 def get_milestone_dir() -> str:
-    """Get milestone directory name in format [MS-NN]:[Description]."""
+    """Get milestone directory name in format [MS-NN]_[Description]."""
     info = get_milestone_info()
     if info["milestone"] and info["description"]:
-        return f"{info['milestone']}:{info['description']}"
+        return f"{info['milestone']}_{info['description']}"
     return ""
 
 
@@ -55,7 +55,7 @@ def build_plan_path(session_id: str) -> Optional[Path]:
 def build_explore_status_path(session_id: str) -> Optional[Path]:
     """Build expected codebase-status file path.
 
-    File format: project/[MS-NN]:[Description]/exploration/codebase-status_[session-id]_[MMDDYY].md
+    File format: project/[MS-NN]_[Description]/exploration/codebase-status_[session-id]_[MMDDYY].md
     """
     milestone_dir = get_milestone_dir()
     if not milestone_dir or not session_id:
@@ -118,7 +118,7 @@ def find_explore_status_file(session_id: str = None) -> Optional[Path]:
 def build_review_path(session_id: str) -> Optional[Path]:
     """Build expected code review file path.
 
-    File format: project/[MS-NN]:[Description]/reviews/review_[session-id]_[MMDDYY].md
+    File format: project/[MS-NN]_[Description]/reviews/review_[session-id]_[MMDDYY].md
     """
     milestone_dir = get_milestone_dir()
     if not milestone_dir or not session_id:

@@ -4,7 +4,7 @@
 
 **Architecture**: Progressive Web App (PWA) with Next.js
 **Primary Stack**: Next.js 15.1 + React 19.1 + TypeScript 5.9 + Tailwind 4.1 + Tiptap 3.4
-**Deployment**: Vercel (recommended) or Firebase Hosting
+**Deployment**: Vercel (recommended)
 **Core Concept**: Distraction-free note-taking with AI-powered medical autocomplete, nursing-specific templates, and bulletproof offline sync
 
 ### Technology Stack
@@ -13,8 +13,8 @@
 - **UI Framework**: Shadcn UI + Radix UI primitives, Tailwind CSS 4.1
 - **Rich Text**: Tiptap 3.4 with custom extensions
 - **State Management**: Zustand 5.0.8 + Immer 10.1.3
-- **Authentication**: Firebase Auth (Client SDK + Admin SDK)
-- **Database**: Firestore (primary) + Dexie (IndexedDB for offline)
+- **Authentication**: Supabase Auth
+- **Database**: Supabase PostgreSQL (primary) + PowerSync (SQLite for offline)
 - **AI Integration**: OpenAI API (GPT-4.1 nano) via Next.js API routes
 - **Payment Processing**: Stripe (subscriptions and checkout)
 - **PWA**: next-pwa 5.6.0 for offline support
@@ -46,11 +46,12 @@
 
 ### Backend Architecture
 
-**Hybrid Next.js + Firebase**
+**Hybrid Next.js + Supabase**
 - Next.js API Routes for AI features and business logic
-- Firebase Client SDK for direct Firestore access (real-time)
-- Firebase Admin SDK for server-side operations (API routes)
-- Firestore security rules enforce user isolation
+- Supabase Client SDK for direct PostgreSQL access (real-time)
+- Supabase Service Role for server-side operations (API routes)
+- PostgreSQL Row Level Security (RLS) enforces user isolation
+- PowerSync for offline-first sync with SQLite local storage
 
 **API Endpoints**
 ```
@@ -67,83 +68,84 @@ POST /api/stripe/portal         # Create customer portal session
 
 ## 3. Data Models
 
-### Firestore Collections
+### PostgreSQL Tables
 
-#### Users Collection
-**Path**: `/users/{userId}`
+#### Users Table
 
-```typescript
-interface UserProfile {
-  userId: string;
-  email: string;
-  displayName: string;
-  tier: "free" | "pro";
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT,
+  tier TEXT DEFAULT 'free' CHECK (tier IN ('free', 'pro')),
 
-  usage: {
-    autocompleteRequests: number;    // Free: 100/month
-    resetDate: Timestamp;
-  };
+  -- Usage tracking
+  autocomplete_requests INT DEFAULT 0,
+  reset_date TIMESTAMPTZ DEFAULT NOW(),
 
-  settings: {
-    theme: "light" | "dark" | "system";
-    autoSave: boolean;
-  };
+  -- Settings
+  theme TEXT DEFAULT 'system' CHECK (theme IN ('light', 'dark', 'system')),
+  auto_save BOOLEAN DEFAULT true,
 
-  stripe: {
-    customerId?: string;
-    subscriptionId?: string;
-    subscriptionStatus?: "active" | "canceled" | "past_due";
-    currentPeriodEnd?: Timestamp;
-  };
+  -- Stripe
+  stripe_customer_id TEXT,
+  stripe_subscription_id TEXT,
+  stripe_subscription_status TEXT CHECK (stripe_subscription_status IN ('active', 'canceled', 'past_due')),
+  stripe_current_period_end TIMESTAMPTZ,
 
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_tier ON users(tier);
+CREATE INDEX idx_users_created_at ON users(created_at);
 ```
 
-**Indexes**: `email`, `tier`, `createdAt`
+#### Notes Table
 
-#### Notes Collection
-**Path**: `/users/{userId}/notes/{noteId}`
+```sql
+CREATE TABLE notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL DEFAULT 'Untitled',
+  content JSONB,  -- Tiptap JSON document
 
-```typescript
-interface Note {
-  id: string;
-  userId: string;
-  title: string;
-  content: JSONContent;              // Tiptap JSON document
+  category TEXT CHECK (category IN (
+    'pharmacology', 'med-surg', 'pediatrics', 'ob',
+    'mental-health', 'clinical-rotation', 'other'
+  )),
 
-  category: "pharmacology" | "med-surg" | "pediatrics" | "ob" | "mental-health" | "clinical-rotation" | "other";
+  -- Metadata
+  word_count INT DEFAULT 0,
+  character_count INT DEFAULT 0,
 
-  metadata: {
-    wordCount: number;
-    characterCount: number;
-  };
+  -- Sync status
+  last_synced_at TIMESTAMPTZ,
+  version INT DEFAULT 1,
+  device_id TEXT,
 
-  syncStatus: {
-    lastSyncedAt: Timestamp;
-    version: number;
-    deviceId: string;
-  };
+  -- Soft delete
+  is_deleted BOOLEAN DEFAULT false,
+  deleted_at TIMESTAMPTZ,
 
-  isDeleted: boolean;                // Soft delete flag
-  deletedAt?: Timestamp;             // When moved to trash
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
+-- Indexes for common queries
+CREATE INDEX idx_notes_user_id ON notes(user_id);
+CREATE INDEX idx_notes_user_deleted_updated ON notes(user_id, is_deleted, updated_at DESC);
+CREATE INDEX idx_notes_user_deleted_category ON notes(user_id, is_deleted, category, updated_at DESC);
+CREATE INDEX idx_notes_user_deleted_at ON notes(user_id, is_deleted, deleted_at);
 ```
-
-**Composite Indexes**:
-- `userId` + `isDeleted` + `updatedAt` (note library sorting)
-- `userId` + `isDeleted` + `category` + `updatedAt` (category filtering)
-- `userId` + `isDeleted` + `deletedAt` (trash management)
 
 **Tiptap Content Structure**
 ```typescript
 import { JSONContent } from "@tiptap/core";
 
-// Tiptap stores content as ProseMirror JSON
+// Tiptap stores content as ProseMirror JSON (stored in JSONB column)
 const content: JSONContent = {
   type: "doc",
   content: [
@@ -153,54 +155,103 @@ const content: JSONContent = {
 };
 ```
 
-#### Version Snapshots (Backend Only - No UI in MVP)
-**Path**: `/users/{userId}/notes/{noteId}/snapshots/{snapshotId}`
+#### Snapshots Table (Backend Only - No UI in MVP)
 
-```typescript
-interface VersionSnapshot {
-  id: string;
-  noteId: string;
-  content: JSONContent;
-  timestamp: Timestamp;
+```sql
+CREATE TABLE snapshots (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  note_id UUID NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
+  content JSONB NOT NULL,
 
-  changesSummary: {
-    addedWords: number;
-    removedWords: number;
-  };
+  -- Changes summary
+  added_words INT DEFAULT 0,
+  removed_words INT DEFAULT 0,
 
-  snapshotType: "auto" | "manual" | "sync_conflict";
-  conflictSource?: string;           // Device ID if sync conflict
-}
+  snapshot_type TEXT NOT NULL CHECK (snapshot_type IN ('auto', 'manual', 'sync_conflict')),
+  conflict_source TEXT,  -- Device ID if sync conflict
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_snapshots_note_id ON snapshots(note_id);
+CREATE INDEX idx_snapshots_note_created ON snapshots(note_id, created_at DESC);
 ```
 
 **MVP Note**: Snapshots stored for sync conflict recovery but **no UI** to browse version history. Enables Fast-Follow features.
 
 **Retention Policy**:
-- Free tier: Last 10 snapshots per note (auto-deleted)
+- Free tier: Last 10 snapshots per note (enforced via database trigger)
 - Pro tier: Unlimited snapshots
 
-### Dexie (IndexedDB) Schema
-
-**Tables**: `notes`, `syncQueue`, `versionSnapshots`, `userPreferences`
+### TypeScript Interfaces
 
 ```typescript
-export class NexlyDatabase extends Dexie {
-  notes!: Table<LocalNote, string>;
-  syncQueue!: Table<SyncQueueItem, number>;
-  versionSnapshots!: Table<LocalSnapshot, string>;
+// Matches PostgreSQL schema
+interface User {
+  id: string;
+  email: string;
+  display_name: string | null;
+  tier: 'free' | 'pro';
+  autocomplete_requests: number;
+  reset_date: string;
+  theme: 'light' | 'dark' | 'system';
+  auto_save: boolean;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_subscription_status: 'active' | 'canceled' | 'past_due' | null;
+  stripe_current_period_end: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-  constructor() {
-    super("nexly_rn");
-    this.version(1).stores({
-      notes: "id, userId, updatedAt, category, isDeleted, [userId+updatedAt], [userId+category]",
-      syncQueue: "++id, createdAt, [operation+collection]",
-      versionSnapshots: "id, [userId+noteId+timestamp], noteId, timestamp",
-    });
-  }
+interface Note {
+  id: string;
+  user_id: string;
+  title: string;
+  content: JSONContent | null;
+  category: 'pharmacology' | 'med-surg' | 'pediatrics' | 'ob' | 'mental-health' | 'clinical-rotation' | 'other' | null;
+  word_count: number;
+  character_count: number;
+  last_synced_at: string | null;
+  version: number;
+  device_id: string | null;
+  is_deleted: boolean;
+  deleted_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Snapshot {
+  id: string;
+  note_id: string;
+  content: JSONContent;
+  added_words: number;
+  removed_words: number;
+  snapshot_type: 'auto' | 'manual' | 'sync_conflict';
+  conflict_source: string | null;
+  created_at: string;
 }
 ```
 
-**Purpose**: Offline-first storage, sync queue, full-text search
+### PowerSync Schema (Local SQLite)
+
+PowerSync automatically syncs the PostgreSQL tables to local SQLite. The sync rules define which data each user can access:
+
+```yaml
+# powersync.yaml
+bucket_definitions:
+  user_data:
+    parameters: SELECT id as user_id FROM users WHERE id = token_parameters.user_id
+    data:
+      - SELECT * FROM users WHERE id = bucket.user_id
+      - SELECT * FROM notes WHERE user_id = bucket.user_id
+      - SELECT s.* FROM snapshots s
+        JOIN notes n ON s.note_id = n.id
+        WHERE n.user_id = bucket.user_id
+```
+
+**Purpose**: Offline-first storage with automatic bi-directional sync
 
 ---
 
@@ -208,26 +259,43 @@ export class NexlyDatabase extends Dexie {
 
 ### Authentication Flow
 
-**Client-Side** (Firebase Client SDK)
+**Client-Side** (Supabase Client SDK)
 - Email/password signup and login
-- Session management with cookies (httpOnly, secure)
-- Auto token refresh (1-hour expiry)
+- Session management via Supabase Auth (secure cookies)
+- Auto token refresh (JWTs with configurable expiry)
 - Password requirements: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
 
-**Server-Side** (Firebase Admin SDK)
+**Server-Side** (Supabase Service Role)
 - Token verification in middleware and API routes
 - User ID extraction from JWT tokens
 - Route protection via middleware
 
 **Token Verification Pattern**
 ```typescript
-// middleware.ts or API routes
-const token = request.headers.get("authorization")?.split("Bearer ")[1];
-const decodedToken = await adminAuth.verifyIdToken(token);
-const userId = decodedToken.uid;
+// middleware.ts
+import { createServerClient } from '@supabase/ssr';
+
+const supabase = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { cookies }
+);
+
+const { data: { user } } = await supabase.auth.getUser();
+const userId = user?.id;
 ```
 
-### Firestore Security Rules
+```typescript
+// API routes (service role for admin operations)
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+```
+
+### Row Level Security (RLS) Policies
 
 **Key Principles**:
 - Users can only read/write their own data
@@ -235,34 +303,64 @@ const userId = decodedToken.uid;
 - User deletion prevented (soft delete only)
 - Tier-based quota enforcement via API routes
 
-```javascript
-// Helper functions
-function isAuthenticated() { return request.auth != null; }
-function isOwner(userId) { return request.auth.uid == userId; }
+```sql
+-- Enable RLS on all tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE snapshots ENABLE ROW LEVEL SECURITY;
 
-// Users collection
-match /users/{userId} {
-  allow read, create, update: if isAuthenticated() && isOwner(userId);
-  allow delete: if false;  // Prevent accidental deletion
-}
+-- Users table policies
+CREATE POLICY "Users can read own profile"
+  ON users FOR SELECT
+  USING (auth.uid() = id);
 
-// Notes subcollection
-match /users/{userId}/notes/{noteId} {
-  allow read, create, update, delete: if isAuthenticated() && isOwner(userId);
+CREATE POLICY "Users can update own profile"
+  ON users FOR UPDATE
+  USING (auth.uid() = id);
 
-  // Snapshots (immutable)
-  match /snapshots/{snapshotId} {
-    allow read, create: if isAuthenticated() && isOwner(userId);
-    allow update: if false;  // Immutable
-    allow delete: if isAuthenticated() && isOwner(userId);
-  }
-}
+CREATE POLICY "Users can insert own profile"
+  ON users FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+-- Prevent user deletion (soft delete only)
+CREATE POLICY "Prevent user deletion"
+  ON users FOR DELETE
+  USING (false);
+
+-- Notes table policies
+CREATE POLICY "Users can CRUD own notes"
+  ON notes FOR ALL
+  USING (auth.uid() = user_id);
+
+-- Snapshots table policies
+CREATE POLICY "Users can read own snapshots"
+  ON snapshots FOR SELECT
+  USING (
+    note_id IN (SELECT id FROM notes WHERE user_id = auth.uid())
+  );
+
+CREATE POLICY "Users can insert own snapshots"
+  ON snapshots FOR INSERT
+  WITH CHECK (
+    note_id IN (SELECT id FROM notes WHERE user_id = auth.uid())
+  );
+
+-- Snapshots are immutable (no updates)
+CREATE POLICY "Snapshots are immutable"
+  ON snapshots FOR UPDATE
+  USING (false);
+
+CREATE POLICY "Users can delete own snapshots"
+  ON snapshots FOR DELETE
+  USING (
+    note_id IN (SELECT id FROM notes WHERE user_id = auth.uid())
+  );
 ```
 
 ### API Security
 
 - HTTPS only (automatic with Vercel)
-- Firebase Auth token validation on all API routes
+- Supabase Auth token validation on all API routes
 - Input validation via Zod schemas
 - Rate limiting: 60 requests/min per user (excluding AI which has quota)
 - AI quota: 100 requests/month (Free), unlimited (Pro)
@@ -318,7 +416,7 @@ match /users/{userId}/notes/{noteId} {
 
 ### Quota Management
 
-**Tracking**: Firestore `users` collection (`usage` field)
+**Tracking**: PostgreSQL `users` table (`autocomplete_requests` column)
 **Enforcement**: Client-side pre-check + Server-side validation
 **Reset**: Monthly on user's signup anniversary date
 **Display**: Quota badge in editor toolbar
@@ -399,30 +497,82 @@ const formulas: Record<string, JSONContent> = {
 
 ## 7. Offline & Sync Strategy
 
+### PowerSync Architecture
+
+PowerSync provides offline-first sync between Supabase PostgreSQL and local SQLite:
+
+```
+┌─────────────┐    ┌─────────────┐    ┌──────────────────┐
+│   Browser   │◄──►│  PowerSync  │◄──►│ Supabase Postgres│
+│   SQLite    │    │   Service   │    │                  │
+└─────────────┘    └─────────────┘    └──────────────────┘
+```
+
+**Key Features**:
+- SQLite local database (replaces IndexedDB/Dexie)
+- Bi-directional sync with conflict resolution
+- Works completely offline
+- Official Supabase partnership
+
 ### Data Flow Pattern
 
-1. **Write Path**: User edits → Dexie (instant) → Sync queue → Firestore (background)
-2. **Read Path**: Dexie first (instant) → Firestore real-time updates (merge)
+1. **Write Path**: User edits → SQLite (instant) → PowerSync queue → Supabase (background)
+2. **Read Path**: SQLite first (instant) → PowerSync sync (merge from Supabase)
 3. **Conflict Resolution**: Last-write-wins with version tracking
+
+### PowerSync Configuration
+
+```typescript
+// lib/powersync/schema.ts
+import { column, Schema, Table } from '@powersync/web';
+
+const notes = new Table({
+  id: column.text,
+  user_id: column.text,
+  title: column.text,
+  content: column.text, // JSON stringified
+  category: column.text,
+  word_count: column.integer,
+  character_count: column.integer,
+  version: column.integer,
+  is_deleted: column.integer, // SQLite boolean
+  created_at: column.text,
+  updated_at: column.text,
+});
+
+export const schema = new Schema({ notes });
+```
+
+```typescript
+// lib/powersync/db.ts
+import { PowerSyncDatabase } from '@powersync/web';
+import { schema } from './schema';
+
+export const db = new PowerSyncDatabase({
+  schema,
+  database: { dbFilename: 'nexly.db' }
+});
+```
 
 ### Auto-Save
 
 **Frequency**: Every 30 seconds of inactivity
 **Indicator**: "Saved" badge in toolbar with timestamp
-**Local**: Always saves to Dexie immediately
-**Cloud**: Syncs to Firestore when online
+**Local**: Always saves to SQLite immediately
+**Cloud**: PowerSync syncs to Supabase when online
 
 ### Sync Queue
 
-**Purpose**: Queue operations when offline, replay when online
-**Retry Logic**: Max 5 retries with exponential backoff (5s, 15s, 30s, 60s, 120s)
+**Purpose**: PowerSync handles queuing automatically
+**Retry Logic**: Built-in with exponential backoff
 **Operations**: `create`, `update`, `delete` for notes
+**Status**: `db.currentStatus` provides sync state
 
 ### Conflict Resolution
 
 **Algorithm**: Last-write-wins (most recent timestamp)
-**Conflict Detection**: Compare `version` and `updatedAt` fields
-**Recovery**: Overwritten version saved as snapshot with `snapshotType: "sync_conflict"`
+**Conflict Detection**: Compare `version` and `updated_at` fields
+**Recovery**: Overwritten version saved as snapshot with `snapshot_type: 'sync_conflict'`
 **User Notification**: Toast notification indicating which device's version was kept
 
 ### PWA Configuration
@@ -434,8 +584,8 @@ const formulas: Record<string, JSONContent> = {
 - StaleWhileRevalidate for pages
 
 **Features**:
-- Offline note editing
-- Background sync for note updates
+- Offline note editing (via PowerSync SQLite)
+- Background sync (via PowerSync)
 - Install prompt for desktop/mobile
 
 ---
@@ -455,7 +605,7 @@ const formulas: Record<string, JSONContent> = {
 1. User clicks "Upgrade to Pro"
 2. `POST /api/stripe/checkout` creates Stripe Checkout session
 3. User redirected to Stripe-hosted payment page
-4. On success, webhook updates user tier in Firestore
+4. On success, webhook updates user tier in Supabase
 
 **Webhook Events**:
 - `checkout.session.completed`: Create subscription, update tier to Pro
@@ -493,7 +643,7 @@ const formulas: Record<string, JSONContent> = {
 
 ### Search
 
-**Client-Side**: Full-text search on title and content (Dexie)
+**Client-Side**: Full-text search on title and content (SQLite via PowerSync)
 **Performance**: <300ms for libraries up to 1,000 notes
 
 ### Trash System
@@ -523,8 +673,8 @@ const TiptapEditor = dynamic(() => import("@/components/editor/tiptap-editor"), 
 ```
 
 **Caching Strategy**:
-- Server-side: Time-based ISR, Firestore query caching (5-min TTL)
-- Client-side: Dexie for notes, Service Worker for static assets
+- Server-side: Time-based ISR, Supabase query caching (5-min TTL)
+- Client-side: PowerSync SQLite for notes, Service Worker for static assets
 
 ### Performance Targets (MVP)
 
@@ -577,8 +727,8 @@ nexly-rn/
 │   └── layout/                   # Navbar, sidebar
 │
 ├── src/lib/                      # Core logic
-│   ├── firebase/                 # Client + Admin SDK setup
-│   ├── dexie/                    # IndexedDB schema + sync
+│   ├── supabase/                 # Supabase client + server setup
+│   ├── powersync/                # PowerSync schema + sync
 │   ├── ai/                       # OpenAI integrations
 │   ├── stripe/                   # Stripe client + helpers
 │   └── validations.ts            # Zod schemas
@@ -586,7 +736,7 @@ nexly-rn/
 ├── src/hooks/                    # Custom React hooks
 │   ├── auth/                     # Auth hooks
 │   ├── ai/                       # AI integration hooks
-│   └── data/                     # Firestore + Dexie sync hooks
+│   └── data/                     # Supabase + PowerSync sync hooks
 │
 ├── src/types/                    # TypeScript types
 │   ├── models/                   # Note, User interfaces
@@ -607,18 +757,16 @@ nexly-rn/
 ## 12. Environment Variables
 
 ```env
-# Firebase (Client - Public)
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
+# Supabase (Client - Public)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
-# Firebase Admin (Server-only)
-FIREBASE_ADMIN_PROJECT_ID=
-FIREBASE_ADMIN_CLIENT_EMAIL=
-FIREBASE_ADMIN_PRIVATE_KEY=
+# Supabase (Server-only)
+SUPABASE_SERVICE_ROLE_KEY=
+
+# PowerSync
+NEXT_PUBLIC_POWERSYNC_URL=
+POWERSYNC_PRIVATE_KEY=
 
 # OpenAI
 OPENAI_API_KEY=
@@ -648,10 +796,10 @@ SENTRY_DSN=
   "@tiptap/react": "3.4.2",
   "@tiptap/starter-kit": "3.4.2",
   "@tiptap/extension-placeholder": "3.4.2",
-  "firebase": "^10.x",
-  "firebase-admin": "^12.x",
+  "@supabase/supabase-js": "^2.x",
+  "@supabase/ssr": "^0.x",
+  "@powersync/web": "^1.x",
   "openai": "5.23.1",
-  "dexie": "4.2.0",
   "zustand": "5.0.8",
   "immer": "10.1.3",
   "tailwindcss": "4.1.13",
@@ -700,10 +848,10 @@ SENTRY_DSN=
 - Edge functions for API routes
 - Global CDN for static assets
 
-### Firebase Hosting (Alternative)
-- `firebase deploy --only hosting`
+### Supabase Edge Functions (Alternative)
+- Deploy serverless functions via Supabase
 - Custom domain support
-- SSL certificates included
+- Built-in SSL certificates
 
 ---
 
@@ -711,11 +859,11 @@ SENTRY_DSN=
 
 ### Week 1: Foundation
 - Next.js setup + App Router
-- Firebase integration (Client + Admin SDK)
+- Supabase integration (Client + Server SDK)
 - Shadcn UI components
 - Auth flow (signup, login, logout, password reset)
 - Basic note CRUD (create, read, update, delete)
-- Dexie offline storage setup
+- PowerSync offline storage setup
 
 ### Week 2: Editor & AI
 - Tiptap editor integration
