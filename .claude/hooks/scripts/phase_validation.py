@@ -2,7 +2,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils import get_cache, read_stdin_json
+from utils import get_cache, read_stdin_json, set_cache
+from set_next_phase import extract_slash_command_name 
+
 
 DEFAULT_PHASES = [
     "explore",
@@ -13,9 +15,12 @@ DEFAULT_PHASES = [
     "commit",
 ]
 
+test_input = {
+    "tool_name": "SlashCommand",
+    "tool_input": {"command": "/research"},
+}
 
-CURRENT_PHASE = get_cache("current_phase")
-NEXT_PHASE = get_cache("active_command")
+
 REASONS = {
     "rollback": "You cannot go back to the previous phase.",
     "skipping": "You cannot skip phase(s): ",
@@ -30,15 +35,17 @@ def block_transition(reason: str) -> None:
 
 
 def is_next_phase_valid(
-    next_phase: str = NEXT_PHASE,
+    next_phase: str, 
     all_phases: list[str] = DEFAULT_PHASES,
 ) -> bool:
-
-    current_phase = CURRENT_PHASE
+    current_phase = get_cache("current_phase")
     # Check if next_phase is valid
-    if next_phase not in all_phases or current_phase not in all_phases:
+    if next_phase not in all_phases:
         print(REASONS["unknown_phase"], file=sys.stderr)
         return False
+
+    if not current_phase:
+        return True
 
     # Get current and next phase indices
     current_index = all_phases.index(current_phase)
@@ -61,13 +68,28 @@ def is_next_phase_valid(
 
 
 def validate_phase_transition():
-    if CURRENT_PHASE != "implement":
+    is_active = get_cache("is_active")
+    if not is_active:
         print("Not in implement phase. Skipping phase validation.")
         sys.exit(0)
-    if is_next_phase_valid(NEXT_PHASE):
+
+    hook_input = test_input
+    tool_name = hook_input.get("tool_name", "")
+
+    if tool_name != "SlashCommand":
         sys.exit(0)
 
-    sys.exit(2)
+    command = hook_input.get("tool_input", "").get("command", "")
+    next_phase = extract_slash_command_name(command)
+
+    if not is_next_phase_valid(next_phase):
+        sys.exit(2)
+
+    set_cache(
+        "current_phase", next_phase
+    )
+    print(f"Current phase set to {next_phase}")
+    sys.exit(0)
 
 
 if __name__ == "__main__":

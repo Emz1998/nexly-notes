@@ -1,9 +1,0 @@
-{
-  "active_command": "implement",
-  "block_stoppage": {
-    "condition": false,
-    "reason": "Cannot skip from 'research' to 'code'. Complete phase(s) first: plan"
-  },
-  "active_subagent": "",
-  "current_phase": "research"
-}

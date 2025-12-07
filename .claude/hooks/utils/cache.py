@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-import sys
 from typing import Any
 
 CACHE_PATH = Path(".claude/hooks/cache.json")

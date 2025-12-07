@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 from validate_invocations import track_phases  # type: ignore
 from utils import set_cache, read_stdin_json
 

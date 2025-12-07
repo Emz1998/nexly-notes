@@ -1,7 +1,7 @@
 {
   "session_id": "",
-  "current_subagent": "",
-  "next_subagent": "codebase-explorer",
+  "is_active": true,
+  "current_subagent": "research-specialist",
   "active_skills": "",
   "phases_completed": [
     "plan",
@@ -14,8 +14,7 @@
     "codebase_explorer",
     "research-specialist"
   ],
-  "current_phase": "explore",
-  "next_phase": "implement",
+  "current_phase": "research",
   "block_stoppage": {
     "condition": true,
     "reason": "Tasks and success criteria are not completed."
