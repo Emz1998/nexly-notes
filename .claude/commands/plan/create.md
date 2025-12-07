@@ -1,112 +1,99 @@
 ---
 name: plan-create
 description: Create implementation plan from research and codebase exploration reports by delegating to strategic-planner agent
-allowed-tools: Read, Write, Glob, Grep, Task
+allowed-tools: Task, Glob, Read
 argument-hint: <user-instructions>
 model: sonnet
 ---
 
-**Goal**: Create a detailed implementation plan by analyzing research and codebase exploration reports for a specific milestone
-
-## Context
-
-- Milestone ID: $1 (e.g., MS-001, MS-002)
-- Research reports: `project/$1_*/research/research_*_*.md`
-- Codebase exploration reports: `project/$1_*/explore/explore_*_*.md`
+**Goal**: Invoke the strategic-planner agent to create a comprehensive implementation plan based on validated research reports from the research-specialist
+**User Instructions**: $ARGUMENTS
 
 ## Tasks
 
-### Phase 1: Report Discovery
+1. Locate the most recent validated research report in `project/*/research/research_*.md`
+2. Verify the research report has `validated_by: research-consultant` in frontmatter
+3. Invoke @agent-strategic-planner to create the implementation plan based on the research
+4. Invoke @agent-plan-consultant to review the plan quality and completeness
+5. Report the plan summary and location to user
 
-- T001: Locate the milestone folder matching pattern `project/$1_*`
-- T002: Find the most recent research report in `project/$1_*/research/research_*_*.md`
-- T003: Find the most recent codebase exploration report in `project/$1_*/explore/explore_*_*.md`
-- T004: Validate that both reports exist before proceeding
+## Subagent Delegation Prompt
 
-### Phase 2: Report Analysis
-
-- T005: Read and analyze the research report content
-- T006: Read and analyze the codebase exploration report content
-- T007: Extract key findings, recommendations, and constraints from both reports
-
-### Phase 3: Plan Generation
-
-- T008: Delegate to `strategic-planner` agent with combined research and exploration context
-- T009: Verify the plan was created at `project/$1_*/plans/plan_[session-id]_[MMDDYY].md`
-- T010: Report plan summary to user
-
-## Subagent Delegation
-
-### Strategic Planner
-
-Delegate to `strategic-planner` agent with this prompt:
+Delegate to `strategic-planner` with this prompt:
 
 ```
-Create an implementation plan based on the following research and codebase exploration findings.
+Create an implementation plan for: $ARGUMENTS
 
-## Research Report
-[Content from research_[session-id]_[MMDDYY].md]
+## Required Research Input
 
-## Codebase Exploration Report
-[Content from explore_[session-id]_[MMDDYY].md]
+Read and incorporate findings from the validated research report:
+- Location: project/[MS-NNN]_[milestone-name]/research/research_[session-id]_[MMDDYY].md
+- Ensure the report has validated_by: research-consultant in frontmatter
 
-## Instructions
-Using these validated findings:
-1. Synthesize key insights from both research and exploration reports
-2. Identify implementation opportunities and constraints
-3. Create phased implementation plan with task breakdowns
-4. Define success criteria and acceptance tests
-5. Document dependencies and risk mitigations
+## Plan Requirements
 
-Output: Create plan at project/[milestone]/plans/plan_[session-id]_[date].md
+Using the research findings, create a comprehensive implementation plan that includes:
+
+1. **Objective & Scope**
+   - Clear objective statement based on research conclusions
+   - In-scope and out-of-scope boundaries
+
+2. **Technical Setup & Requirements**
+   - Dependencies and library recommendations from research
+   - Configuration and environment setup
+
+3. **Implementation Phases**
+   - Break down into logical phases (3-5 phases)
+   - Each phase with specific, actionable tasks
+   - Consider deprecated patterns identified in research
+   - Apply best practices from research findings
+
+4. **Quality Gates**
+   - Testing requirements at each phase
+   - Code review checkpoints
+   - Success criteria for phase completion
+
+5. **Files to Be Modified/Created**
+   - List all files that will be touched
+   - New files to be created
+
+6. **Risks & Mitigations**
+   - Incorporate risks identified in research
+   - Add implementation-specific risks
+   - Provide mitigation strategies
+
+## Output
+
+Save the plan to: project/[MS-NNN]_[milestone-name]/plans/plan_[session-id]_[MMDDYY].md
+
+Add frontmatter:
+---
+based_on_research: [path to research file]
+created_by: strategic-planner
+status: pending_review
+---
 ```
-
-## Implementation Strategy
-
-- Always verify both reports exist before delegating to strategic-planner
-- Use glob patterns to find most recent reports when multiple exist
-- Pass full content of both reports to strategic-planner for comprehensive analysis
-- Ensure plan references source reports in its metadata
 
 ## Prohibited Tasks
 
-- DO NOT create a plan if research report is missing
-- DO NOT create a plan if codebase exploration report is missing
+- DO NOT create plans without validated research input
+- DO NOT skip the plan-consultant review
 - DO NOT implement any code
-- DO NOT modify the source reports
+- DO NOT modify research files
+- DO NOT create plans that deviate from research recommendations without justification
 
 ## Success Criteria
 
-- Research report located and read successfully
-- Codebase exploration report located and read successfully
-- strategic-planner agent created implementation plan
-- Plan saved to `project/[milestone]/plans/plan_[session-id]_[MMDDYY].md`
-- Plan references both source reports
+- Research report located and verified as validated
+- strategic-planner created comprehensive implementation plan
+- Plan incorporates key findings from research (deprecated patterns, best practices)
+- plan-consultant reviewed and rated the plan
+- Plan file saved with proper frontmatter and location
 
 ## Examples
 
 ```bash
-# Create plan from MS-001 reports
-/plan-from-reports MS-001
-
-# Create plan from MS-002 reports
-/plan-from-reports MS-002
-
-# Create plan from MS-010 reports
-/plan-from-reports MS-010
+/plan:create offline-first sync implementation
+/plan:create Supabase authentication flow
+/plan:create Tiptap editor with AI autocomplete
 ```
-
-## References
-
-- Research reports: `project/[MS-NNN]_[milestone-name]/research/research_[session-id]_[MMDDYY].md`
-- Exploration reports: `project/[MS-NNN]_[milestone-name]/explore/explore_[session-id]_[MMDDYY].md`
-- Output location: `project/[MS-NNN]_[milestone-name]/plans/plan_[session-id]_[MMDDYY].md`
-
-## Output Format
-
-The command will:
-
-1. Report which research and exploration files were found
-2. Confirm delegation to strategic-planner
-3. Provide path to the generated plan file
-4. Display brief summary of the plan's key phases

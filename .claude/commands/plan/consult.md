@@ -1,112 +1,90 @@
 ---
 name: plan-consult
 description: Review implementation plans and provide feedback with quality rating (1-10 scale)
-allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+allowed-tools: Task, Glob, Read
 argument-hint: <plan-file-path>
 model: sonnet
 ---
 
-**Goal**: Review an implementation plan from `project/[MS-NNN]_[milestone-name]/plans/plan_[session-id]_[MMDDYY].md` and provide comprehensive feedback with a quality rating from 1-10.
+**Goal**: Invoke the plan-consultant agent to review an implementation plan and provide comprehensive feedback with a quality rating (1-10)
+**User Instructions**: $ARGUMENTS
 
 ## Context
 
 - Plan file to review: `$ARGUMENTS`
-- If no argument provided, search for the most recent plan file in `project/*/plans/plan_*.md`
+- Plan files follow the naming pattern: `project/[MS-NNN]_[milestone-name]/plans/plan_[session-id]_[MMDDYY].md`
+- This command delegates the actual review to the `plan-consultant` agent
 
 ## Tasks
 
-### Phase 1: Plan Discovery and Loading
+1. Validate the plan file path is provided in `$ARGUMENTS`
+2. If no argument provided, use Glob to find the most recent plan file in `project/*/plans/plan_*.md`
+3. Invoke @agent-plan-consultant to review the plan and provide structured feedback
+4. Present the plan-consultant's review to the user
 
-- T001: If `$ARGUMENTS` is provided, read the specified plan file directly
-- T002: If no argument provided, use Glob to find all plan files matching `project/*/plans/plan_*.md`
-- T003: Sort discovered plans by date (from filename MMDDYY) and select the most recent
-- T004: Read the plan file contents completely
+## Subagent Delegation Prompt
 
-### Phase 2: Plan Analysis
+Delegate to `plan-consultant` with this prompt:
 
-- T005: Analyze the plan's structure (sections, organization, clarity)
-- T006: Evaluate technical approach and architectural decisions
-- T007: Identify potential risks, gaps, or missing considerations
-- T008: Research industry best practices relevant to the plan's domain using WebSearch
-- T009: Cross-reference with project specs in `specs/` directory if applicable
+```
+Review the implementation plan at: $ARGUMENTS
 
-### Phase 3: Feedback Generation
+Perform the following analysis:
 
-- T010: Document strengths of the plan
-- T011: Document areas for improvement
-- T012: Provide specific, actionable recommendations
-- T013: Calculate and assign quality rating (1-10 scale)
-- T014: Generate structured feedback report
+1. **Plan Structure Analysis**
+   - Evaluate organization, clarity, and logical flow
+   - Assess completeness of requirements coverage
+   - Identify missing sections or underdeveloped areas
+   - Verify alignment with stated project objectives
 
-## Implementation Strategy
+2. **Best Practices Research**
+   - Research best practices for the technologies and patterns proposed
+   - Identify common pitfalls and anti-patterns for the approach
+   - Evaluate whether the plan follows or deviates from standards
 
-- Use a holistic approach: evaluate clarity, feasibility, completeness, and alignment with best practices
-- Provide constructive feedback that enables improvement rather than just criticism
-- Research current best practices to ensure recommendations are up-to-date
-- Consider the project context from CLAUDE.md and specs when evaluating
+3. **Technical Feasibility Assessment**
+   - Evaluate proposed architecture and design patterns
+   - Assess complexity and implementation risk levels
+   - Identify potential technical blockers or challenges
+   - Review dependency management and integration points
+
+4. **Provide Structured Feedback**
+   - Generate a quality score (1-10) based on assessment criteria
+   - Document strengths with specific examples from the plan
+   - List improvement areas with research-backed recommendations
+   - Determine readiness to proceed to implementation phase
+
+Output the review using the Plan Review Report format with sources cited.
+```
 
 ## Rating Criteria
 
 | Score | Description |
 |-------|-------------|
-| 9-10 | Excellent: Comprehensive, well-structured, addresses all concerns, ready for implementation |
-| 7-8 | Good: Solid plan with minor gaps or areas for improvement |
-| 5-6 | Adequate: Acceptable plan but missing significant considerations or clarity |
-| 3-4 | Needs Work: Major gaps, unclear structure, or questionable technical decisions |
-| 1-2 | Insufficient: Incomplete, unclear, or fundamentally flawed approach |
+| 9-10 | Excellent: Comprehensive, follows best practices, ready for implementation |
+| 7-8 | Good: Solid plan aligned with standards, minor gaps |
+| 5-6 | Adequate: Covers basics but deviates from best practices in areas |
+| 3-4 | Needs Work: Significant gaps, unclear approach, missing critical considerations |
+| 1-2 | Insufficient: Major deficiencies, requires substantial rework |
 
 ## Prohibited Tasks
 
 - DO NOT modify the plan file being reviewed
 - DO NOT implement any code from the plan
-- DO NOT skip the research phase for best practices
-- DO NOT provide ratings without justification
+- DO NOT skip delegating to the plan-consultant agent
+- DO NOT provide ratings without the agent's analysis
 
 ## Success Criteria
 
-- [ ] Plan file successfully located and read
-- [ ] All plan sections analyzed for quality and completeness
-- [ ] Industry best practices researched and referenced
-- [ ] Specific strengths identified with examples
-- [ ] Specific improvement areas identified with actionable recommendations
-- [ ] Quality rating provided with clear justification
-- [ ] Feedback formatted in structured report format
+- Plan file successfully located and validated
+- plan-consultant agent invoked with proper context
+- Quality score (1-10) clearly presented with justification
+- Structured feedback with research-backed recommendations provided
+- Clear verdict (APPROVED/NEEDS REVISION) communicated to user
 
-## Output Format
+## Examples
 
-```markdown
-# Plan Review Report
-
-## Plan Details
-- **File**: [plan file path]
-- **Date**: [date from filename]
-- **Milestone**: [milestone from path]
-
-## Quality Rating: [X]/10
-
-### Rating Justification
-[Explanation of the rating]
-
-## Strengths
-1. [Strength 1 with specific example]
-2. [Strength 2 with specific example]
-...
-
-## Areas for Improvement
-1. [Issue 1]
-   - **Impact**: [How this affects the plan]
-   - **Recommendation**: [Specific actionable fix]
-2. [Issue 2]
-   - **Impact**: [How this affects the plan]
-   - **Recommendation**: [Specific actionable fix]
-...
-
-## Best Practices Alignment
-- [How the plan aligns or deviates from industry best practices]
-
-## Risk Assessment
-- [Identified risks and mitigation suggestions]
-
-## Summary
-[Brief overall assessment and next steps]
+```bash
+/plan:consult project/MS-001_auth/plans/plan_abc123_120325.md
+/plan:consult  # Reviews most recent plan file
 ```

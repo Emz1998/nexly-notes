@@ -2,7 +2,6 @@
 name: research-consult
 description: Review research in project/[MS-NNN]_[milestone-name]/research/ and provide feedback and rating from 1-10
 allowed-tools: Read, Glob, Grep, Task
-argument-hint: <research-file-path>
 model: sonnet
 ---
 

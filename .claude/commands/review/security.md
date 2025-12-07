@@ -2,15 +2,11 @@
 name: review-security
 description: Review security vulnerabilities for files or directories by delegating to security-expert agent
 allowed-tools: Read, Glob, Grep, Task
-argument-hint: <file-or-directory-path>
 model: sonnet
 ---
 
 **Goal**: Identify security vulnerabilities, anti-patterns, and attack vectors for specified files or directories
-
-## Context
-
-- Target path: $ARGUMENTS (required - file or directory to review)
+**User Instructions**: $ARGUMENTS (optional)
 
 ## Tasks
 

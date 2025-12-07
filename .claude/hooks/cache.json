@@ -1,30 +1,23 @@
 {
-  "plan_mode": {
-    "is_active": false,
-    "session_id": "bfca9241-4de5-4473-a1b7-1714708543e1"
-  },
-  "research_mode": {
-    "is_active": false,
-    "session_id": "test-123"
-  },
-  "explore_mode": {
-    "is_active": false,
-    "session_id": "test-123"
-  },
-  "code_mode": {
-    "is_active": false,
-    "session_id": "",
-    "current_phase": "",
-    "plan_file": ""
-  },
-  "code_review_mode": {
-    "is_active": false,
-    "session_id": "test-final"
-  },
-  "implement_flow": {
-    "is_active": true,
-    "session_id": "test-456",
-    "current_step": 0,
-    "completed_steps": []
+  "session_id": "",
+  "current_subagent": "",
+  "next_subagent": "codebase-explorer",
+  "active_skills": "",
+  "phases_completed": [
+    "plan",
+    "explore",
+    "implement"
+  ],
+  "skills_triggered": [],
+  "subagents_triggered": [
+    "strategic_planner",
+    "codebase_explorer",
+    "research-specialist"
+  ],
+  "current_phase": "explore",
+  "next_phase": "implement",
+  "block_stoppage": {
+    "condition": true,
+    "reason": "Tasks and success criteria are not completed."
   }
 }

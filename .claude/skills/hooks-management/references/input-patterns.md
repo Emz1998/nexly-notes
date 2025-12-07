@@ -15,12 +15,12 @@ All hook events include these base fields:
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `session_id` | string | Unique UUID for the current session |
+| Field             | Type   | Description                               |
+| ----------------- | ------ | ----------------------------------------- |
+| `session_id`      | string | Unique UUID for the current session       |
 | `transcript_path` | string | Path to the session transcript JSONL file |
-| `cwd` | string | Current working directory |
-| `hook_event_name` | string | Name of the hook event being triggered |
+| `cwd`             | string | Current working directory                 |
+| `hook_event_name` | string | Name of the hook event being triggered    |
 
 ---
 
@@ -40,8 +40,8 @@ Triggered when a Claude Code session begins.
 }
 ```
 
-| Field | Type | Values | Description |
-|-------|------|--------|-------------|
+| Field    | Type   | Values                    | Description                                               |
+| -------- | ------ | ------------------------- | --------------------------------------------------------- |
 | `source` | string | `"startup"` \| `"resume"` | Whether this is a new session or resuming an existing one |
 
 ### SessionEnd
@@ -58,8 +58,8 @@ Triggered when a Claude Code session ends.
 }
 ```
 
-| Field | Type | Values | Description |
-|-------|------|--------|-------------|
+| Field    | Type   | Values                | Description                    |
+| -------- | ------ | --------------------- | ------------------------------ |
 | `reason` | string | `"prompt_input_exit"` | Reason for session termination |
 
 ### SubagentStop
@@ -79,12 +79,12 @@ Triggered when a subagent (Task tool) completes execution.
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `permission_mode` | string | Current permission mode (`"default"` \| `"bypassPermissions"`) |
-| `stop_hook_active` | boolean | Whether the stop hook is currently active |
-| `agent_id` | string | Unique identifier for the subagent |
-| `agent_transcript_path` | string | Path to the subagent's transcript file |
+| Field                   | Type    | Description                                                    |
+| ----------------------- | ------- | -------------------------------------------------------------- |
+| `permission_mode`       | string  | Current permission mode (`"default"` \| `"bypassPermissions"`) |
+| `stop_hook_active`      | boolean | Whether the stop hook is currently active                      |
+| `agent_id`              | string  | Unique identifier for the subagent                             |
+| `agent_transcript_path` | string  | Path to the subagent's transcript file                         |
 
 ### PreCompact
 
@@ -101,9 +101,9 @@ Triggered before context compaction occurs.
 }
 ```
 
-| Field | Type | Values | Description |
-|-------|------|--------|-------------|
-| `trigger` | string | `"auto"` \| `"manual"` | What triggered the compaction |
+| Field                 | Type           | Values                                 | Description                   |
+| --------------------- | -------------- | -------------------------------------- | ----------------------------- |
+| `trigger`             | string         | `"auto"` \| `"manual"`                 | What triggered the compaction |
 | `custom_instructions` | string \| null | Custom instructions for the compaction |
 
 ---
@@ -125,10 +125,10 @@ Triggered when the user submits a prompt.
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `permission_mode` | string | Current permission mode |
-| `prompt` | string | The user's submitted prompt text |
+| Field             | Type   | Description                      |
+| ----------------- | ------ | -------------------------------- |
+| `permission_mode` | string | Current permission mode          |
+| `prompt`          | string | The user's submitted prompt text |
 
 ### Notification
 
@@ -145,10 +145,10 @@ Triggered when a notification is displayed to the user.
 }
 ```
 
-| Field | Type | Values | Description |
-|-------|------|--------|-------------|
-| `message` | string | - | The notification message content |
-| `notification_type` | string | `"permission_prompt"` | Type of notification |
+| Field               | Type   | Values                | Description                      |
+| ------------------- | ------ | --------------------- | -------------------------------- |
+| `message`           | string | -                     | The notification message content |
+| `notification_type` | string | `"permission_prompt"` | Type of notification             |
 
 ### PermissionRequest
 
@@ -166,11 +166,11 @@ Triggered when Claude requests permission to use a tool.
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `permission_mode` | string | Current permission mode |
-| `tool_name` | string | Name of the tool requesting permission |
-| `tool_input` | object | The input parameters for the tool |
+| Field             | Type   | Description                            |
+| ----------------- | ------ | -------------------------------------- |
+| `permission_mode` | string | Current permission mode                |
+| `tool_name`       | string | Name of the tool requesting permission |
+| `tool_input`      | object | The input parameters for the tool      |
 
 ---
 
@@ -188,7 +188,9 @@ All tool events share a common structure with additional tool-specific fields.
   "permission_mode": "bypassPermissions",
   "hook_event_name": "PreToolUse",
   "tool_name": "ToolName",
-  "tool_input": { /* tool-specific input */ },
+  "tool_input": {
+    /* tool-specific input */
+  },
   "tool_use_id": "toolu_xxxx"
 }
 ```
@@ -203,8 +205,12 @@ All tool events share a common structure with additional tool-specific fields.
   "permission_mode": "bypassPermissions",
   "hook_event_name": "PostToolUse",
   "tool_name": "ToolName",
-  "tool_input": { /* tool-specific input */ },
-  "tool_response": { /* tool-specific response */ },
+  "tool_input": {
+    /* tool-specific input */
+  },
+  "tool_response": {
+    /* tool-specific response */
+  },
   "tool_use_id": "toolu_xxxx"
 }
 ```
@@ -216,6 +222,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Read Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Read",
@@ -228,6 +235,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -246,6 +254,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Bash Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Bash",
@@ -257,6 +266,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -271,6 +281,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Glob Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Glob",
@@ -282,13 +293,11 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
-    "filenames": [
-      "/path/to/file1.py",
-      "/path/to/file2.py"
-    ],
+    "filenames": ["/path/to/file1.py", "/path/to/file2.py"],
     "durationMs": 63,
     "numFiles": 33,
     "truncated": false
@@ -299,6 +308,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Grep Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Grep",
@@ -316,14 +326,12 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
     "mode": "files_with_matches",
-    "filenames": [
-      ".claude/hooks/file1.py",
-      ".claude/hooks/file2.py"
-    ],
+    "filenames": [".claude/hooks/file1.py", ".claude/hooks/file2.py"],
     "numFiles": 3,
     "appliedLimit": 3
   }
@@ -333,6 +341,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Write Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Write",
@@ -344,6 +353,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -359,6 +369,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Edit Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Edit",
@@ -371,6 +382,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -401,6 +413,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### TodoWrite Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "TodoWrite",
@@ -417,6 +430,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -435,6 +449,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### Task Tool (Subagent)
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "Task",
@@ -448,6 +463,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -468,6 +484,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### EnterPlanMode Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "EnterPlanMode",
@@ -476,6 +493,7 @@ All tool events share a common structure with additional tool-specific fields.
 ```
 
 **PostToolUse Response:**
+
 ```json
 {
   "tool_response": {
@@ -487,6 +505,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### ExitPlanMode Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "ExitPlanMode",
@@ -499,6 +518,7 @@ All tool events share a common structure with additional tool-specific fields.
 ### SlashCommand Tool
 
 **PreToolUse Input:**
+
 ```json
 {
   "tool_name": "SlashCommand",
@@ -512,9 +532,9 @@ All tool events share a common structure with additional tool-specific fields.
 
 ## Permission Mode Values
 
-| Value | Description |
-|-------|-------------|
-| `"default"` | Standard permission checking enabled |
+| Value                 | Description                                        |
+| --------------------- | -------------------------------------------------- |
+| `"default"`           | Standard permission checking enabled               |
 | `"bypassPermissions"` | Running in bypass mode (e.g., after user approval) |
 
 ---

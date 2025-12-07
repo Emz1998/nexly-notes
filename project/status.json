@@ -1,15 +1,18 @@
 {
+    "current_session_id": "129b58d0-e593-4fab-a137-73fb80f26276",
     "project_phase": "MVP",
-    "current_plan_phase": "Foundation",
+    "current_phase": "Foundation",
     "current_milestone": "MS-001",
-    "milestone_description": "Foundation",
+    "last_milestone_completed": "MS-001",
+    "milestones_completed": 1,
+    "milestones_remaining": 10,
     "current_task": "T001",
-    "current_task_phase": "explore",
+    "last_task_completed": "T001",
     "current_task_status": "not_started",
     "tasks_completed": 0,
     "tasks_remaining": 10,
     "total_tasks": 10,
     "total_milestones": 10,
-    "total_plan_phases": 3,
+    "total_phases": 3,
     "target_release_date": "2026-01-01"
 }

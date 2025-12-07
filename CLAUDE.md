@@ -139,6 +139,7 @@ nexly-rn/
 ## Rules
 
 - Follow PROACTIVELY @.claude/rules/coding.md when doing coding tasks
+- Follow @.claude/rules/python-rules.md when doing python tasks
 - Follow PROACTIVELY @.claude/rules/markdown-formatting.md when doing markdown documentation tasks
 - Follow the plan strictly. Do not deviate from it.
 - Do not implement tasks that are beyond the scope of your plan

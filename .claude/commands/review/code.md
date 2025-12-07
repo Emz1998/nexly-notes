@@ -2,7 +2,6 @@
 name: review-code
 description: Review code quality for files or directories by delegating to code-reviewer agent
 allowed-tools: Read, Glob, Grep, Task
-argument-hint: <file-paths>
 model: sonnet
 ---
 
@@ -10,13 +9,13 @@ model: sonnet
 
 ## Context
 
-- Instructions: $ARGUMENTS (required - instructions for the code review)
+- Additional instructions: $ARGUMENTS
 
 ## Tasks
 
-- T001: Validate the provided path exists and identify files to review
-- T002: Delegate to `code-reviewer` agent to analyze the code
-- T003: Report review findings and recommendations to user
+1. Validate the provided path exists and identify files to review
+2. Delegate to `code-reviewer` agent to analyze the code
+3. Report review findings and recommendations to user
 
 ## Subagent Delegation
 
@@ -54,15 +53,6 @@ Sample File Path: `sessions/session_120325_ABCDE-123456-789012/code-reviews/code
 
 ## Prohibited Tasks
 
-- DO NOT modify any code during review
-- DO NOT skip security analysis
+- DO NOT modify any code during review. (Only invoke Subagents to do this)
 - DO NOT provide vague recommendations without line references
 - DO NOT review node_modules, dist, or build directories
-
-## Success Criteria
-
-- Target path validated and files identified
-- code-reviewer agent completed analysis
-- Findings categorized by severity with line references
-- Actionable recommendations provided
-- Quality summary reported to user

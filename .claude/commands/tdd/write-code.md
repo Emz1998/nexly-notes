@@ -2,40 +2,23 @@
 name: write-code
 description: Write minimal code to pass existing failing tests (TDD Green Phase)
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, TodoWrite
-argument-hint: [test-file-path]
 model: sonnet
 ---
 
 **Goal**: Write the minimal implementation code needed to make failing tests pass (TDD Green Phase)
-
-## Context
-
-- Test file path (optional): $ARGUMENTS
-- Default test location: @src/tests/
-- Test structure:
-  - @src/tests/components/ - Component tests
-  - @src/tests/hooks/ - Hook tests
-  - @src/tests/lib/ - Library/utility tests
+**User Instructions**: $ARGUMENTS (optional)
 
 ## Tasks
 
-### Phase 1: Discover Failing Tests
-
-- T001: If no argument provided, scan `src/tests/` for all test files
-- T002: Run the test suite to identify failing tests
-- T003: Analyze each failing test to understand what implementation is expected
-
-### Phase 2: Implement Minimal Code
-
-- T004: For each failing test, identify the target implementation file
-- T005: Write the minimal code required to make the test pass
-- T006: Run tests after each implementation to verify the test passes
-- T007: Repeat until all failing tests pass
-
-### Phase 3: Validate
-
-- T008: Run the full test suite to confirm no regressions
-- T009: Report the results (tests passed/failed, files created/modified)
+1. Locate the specific tests files in `@src/tests/`
+2. Run the test suite to identify failing tests
+3. Analyze each failing test to understand what implementation is expected
+4. For each failing test, identify the target implementation file
+5. Write the minimal code required to make the test pass
+6. Run tests after each implementation to verify the test passes
+7. Repeat until all failing tests pass
+8. Run the full test suite to confirm no regressions
+9. Report the results (tests passed/failed, files created/modified)
 
 ## Implementation Strategy
 
@@ -55,23 +38,10 @@ model: sonnet
 - DO NOT add documentation or comments unless required by tests
 - DO NOT over-engineer - minimal viable implementation only
 
-## Success Criteria
+## Skills to Use
 
-- All previously failing tests now pass
-- No new test failures introduced
-- Implementation matches exactly what tests expect
-- Code follows project conventions
-- No unnecessary code added
-
-## Examples
-
-```bash
-# Run against all tests in src/tests/
-/write-code
-
-# Run against a specific test file
-/write-code src/tests/components/Button.test.ts
-
-# Run against tests in a specific directory
-/write-code src/tests/hooks/
-```
+- Use `next-js` skills PROACTIVELY if dealing with Next.js framework
+- Use `tailwind` skills PROACTIVELY if dealing with Tailwind CSS
+- Use `PWA` skills PROACTIVELY if dealing with PWA
+- Use `Zod` skills PROACTIVELY if dealing with Zod schemas
+- Use `Supabase` skills PROACTIVELY if dealing with Supabase
