@@ -1,5 +1,5 @@
 ---
-name: strategic-planner
+name: implementation-planner
 description: Use PROACTIVELY this agent when you need to strategically analyze complex problems, devise optimal solution approaches, identify multiple implementation paths, evaluate trade-offs, or create comprehensive strategies for solving technical challenges.
 tools: Read, Write, TodoWrite, Grep, Glob
 model: opus

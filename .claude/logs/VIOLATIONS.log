@@ -1,0 +1,17 @@
+TIME | INFO | SESSION_ID | SOURCE_FILE
+
+2025-12-07 19:42:26 | version-manager subagent(s) were not triggered | 0278f3e7-4610-4b40-b44b-e9bb4038b9de | validate_work.py
+2025-12-07 19:59:19 | Missing phases: plan:consult, tdd:passing-tests, research:consult, tdd:failing-tests, research, explore, code, tdd:refactor, commit, plan, review:code | 1a25fe23-2497-42ed-989e-64437f205537 | validate_work.py
+2025-12-07 19:59:19 | version-manager, codebase-explorer, code-reviewer, research-specialist, test-engineer, strategic-planner, research-consultant, plan-consultant subagent(s) not triggered | 1a25fe23-2497-42ed-989e-64437f205537 | validate_work.py
+2025-12-07 20:36:38 | Missing phases: review:code, commit, plan, tdd:failing-tests, plan:consult, code, research:consult, tdd:passing-tests, research, tdd:refactor, explore | 6052932b-6df8-4292-9da3-1feee5012fb7 | validate_work.py
+2025-12-07 20:36:38 | strategic-planner, research-specialist, version-manager, codebase-explorer, research-consultant, code-reviewer, test-engineer, plan-consultant subagent(s) not triggered | 6052932b-6df8-4292-9da3-1feee5012fb7 | validate_work.py
+2025-12-07 20:47:29 | Missing phases: plan:consult, commit, plan, code, tdd:passing-tests, research, tdd:failing-tests, tdd:refactor, explore, review:code, research:consult | 1e0841cd-fb9b-4429-9b86-8daf3a6c1671 | validate_work.py
+2025-12-07 20:47:30 | research-consultant, plan-consultant, code-reviewer, test-engineer, research-specialist, strategic-planner, codebase-explorer, version-manager subagent(s) not triggered | 1e0841cd-fb9b-4429-9b86-8daf3a6c1671 | validate_work.py
+2025-12-07 21:56:35 | Missing phases: tdd:passing-tests, tdd:refactor, tdd:failing-tests, commit, explore, code, plan:consult, research:consult, plan, research, review:code | 6b0847f9-917a-42e8-a05c-ea0ff756f671 | validate_work.py
+2025-12-07 21:56:35 | codebase-explorer, version-manager, plan-consultant, test-engineer, strategic-planner, research-specialist, code-reviewer, research-consultant subagent(s) not triggered | 6b0847f9-917a-42e8-a05c-ea0ff756f671 | validate_work.py
+2025-12-07 21:57:08 | Missing phases: plan:consult, review:code, research, explore, tdd:refactor, commit, plan, code, tdd:passing-tests, tdd:failing-tests, research:consult | 6b0847f9-917a-42e8-a05c-ea0ff756f671 | validate_work.py
+2025-12-07 21:57:08 | strategic-planner, test-engineer, codebase-explorer, plan-consultant, code-reviewer, research-consultant, research-specialist, version-manager subagent(s) not triggered | 6b0847f9-917a-42e8-a05c-ea0ff756f671 | validate_work.py
+2025-12-09 20:43:59 | Missing phases: explore, research, plan, code, code-review, commit | test-123 | validate_work.py
+2025-12-09 20:43:59 | Missing subagents: codebase-explorer, research-specialist, research-consultant, strategic-planner, plan-consultant, test-manager, code-reviewer | test-123 | validate_work.py
+2025-12-09 20:44:39 | Missing phases: research, plan, code, code-review, commit | test-123 | validate_work.py
+2025-12-09 20:44:39 | Missing subagents: research-specialist, research-consultant, strategic-planner, plan-consultant, test-manager, code-reviewer | test-123 | validate_work.py

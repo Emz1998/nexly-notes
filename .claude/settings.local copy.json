@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "mcp__sequentialthinking__sequentialthinking",
+      "mcp__context7__get-library-docs",
+      "mcp__context7__resolve-library-id",
+      "Bash(npm run dev:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__mcp-server-firecrawl__firecrawl_search",
+      "mcp__mcp-server-firecrawl__firecrawl_extract",
+      "mcp__zen__chat",
+      "mcp__zen__consensus",
+      "mcp__mcp-server-firecrawl__firecrawl_scrape",
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(xargs sed:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(mkfs:*)",
+      "Bash(fdisk:*)",
+      "Bash(dd:*)",
+      "Bash(format:*)",
+      "Bash(chmod -R 000 /)",
+      "Bash(chown -R root /)",
+      "Bash(sudo rm -rf /)",
+      "Bash(sudo dd:*)",
+      "Bash(sudo mkfs:*)",
+      "Bash(sudo fdisk:*)",
+      "Bash(sudo format:*)",
+      "Bash(shutdown:*)",
+      "Bash(reboot:*)",
+      "Bash(halt:*)",
+      "Bash(init 0)",
+      "Bash(init 6)",
+      "Bash(systemctl poweroff)",
+      "Bash(systemctl reboot)",
+      "Bash(systemctl halt)",
+      "Bash(sudo shutdown:*)",
+      "Bash(sudo reboot:*)",
+      "Bash(sudo halt:*)",
+      "Bash(sudo init 0)",
+      "Bash(sudo init 6)",
+      "Bash(sudo systemctl poweroff)",
+      "Bash(sudo systemctl reboot)",
+      "Bash(sudo systemctl halt)"
+    ],
+    "ask": [
+      "ExitPlanMode"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "sequentialthinking",
+    "mcp-server-firecrawl",
+    "playwright",
+    "context7",
+    "shadcn",
+    "zen"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "SlashCommand",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/phase_transition_guard.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/phase_guard.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/subagent_order_validation.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [],
+    "PreCompact": [],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/validate_work.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/activate.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/phase_transition_guard.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/set_session_id.py",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 $CLAUDE_PROJECT_DIR/.claude/hooks/scripts/context_injector.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [],
+    "Notification": []
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash /$CLAUDE_PROJECT_DIR/.claude/statusline-git-format.sh"
+  },
+  "outputStyle": "default",
+  "spinnerTipsEnabled": true
+}

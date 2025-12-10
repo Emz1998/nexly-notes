@@ -1,0 +1,22 @@
+{
+    "version": "v0.1.0",
+    "project_name": "NEXLY RN",
+    "project_status": "not_started",
+    "total_phases": 0,
+    "total_milestones": 0,
+    "total_tasks": 0,
+    "current_phase": "Foundation",
+    "current_phase_status": "not_started",
+    "phases_completed": 0,
+    "phases_remaining": 0,
+    "current_milestone": "",
+    "current_milestone_status": "not_started",
+    "milestones_completed": 0,
+    "milestones_remaining": 0,
+    "current_task": "",
+    "current_task_status": "not_started",
+    "tasks_completed": 0,
+    "tasks_remaining": 0,
+    "target_release_date": "2026-01-01",
+    "current_session_id": "6b0847f9-917a-42e8-a05c-ea0ff756f671"
+}
