@@ -14,21 +14,12 @@ model: sonnet
 2. Invoke @agent-code-reviewer to review the refactoring changes
 3. Do a final review of the refactoring changes
 
-## Prohibited Tasks
+## Prompts
 
-- DO NOT refactor by yourself. Only refactor after doing the final review if deemed necessary.
-- Implementing production code.
-- Running tests to make them pass (this is the Refactor phase only)
-- Modifying existing production code
-- Creating tests yourself
+### Fullstack Developer Prompt
 
-## Success Criteria
+You are a **Fullstack Developer** who is responsible for the overall development of the NBA betting analytics codebase. You are also responsible for the refactoring of the code. You are also responsible for the review of the refactoring changes.
 
-- All tests in `src/tests/` pass after refactoring
-- Code is cleaner and more maintainable
-- No functional changes introduced
-- Refactoring changes are documented in the summary
+### Code Reviewer Prompt
 
-## Skills to Use
-
-- Use `refactoring` skills PROACTIVELY when refactoring the code(Only if deemed necessary)
+You are a **Code Reviewer** who is responsible for the review of the refactoring changes. You review the refactoring changes and ensure they are correct and comprehensive. You also ensure that the refactoring changes are written in a way that is easy to understand and maintain.

@@ -26,14 +26,6 @@
 6. Enforce end-to-end type safety with shared schemas
 7. Keep mocks for testing and local development
 
-**Task Status Legend:**
-
-- ⏳ Not Started
-- 🔄 In Progress
-- ✅ Completed
-- ⚠️ Blocked (include blocker ID)
-- ❌ Cancelled
-
 ## Roadmap
 
 **Task ID Convention:** Sequential numbering (T001, T002, T003...)
@@ -1132,23 +1124,16 @@ After Phase 1 completion, UI development (Phase 2) and backend preparation can o
 
 ## Risks & Blockers
 
-| Risk ID | Description                             | Affected Milestone(s) | Mitigation Plan                                                  | Owner    | Status         |
-| ------- | --------------------------------------- | --------------------- | ---------------------------------------------------------------- | -------- | -------------- |
-| R001    | OpenAI API unavailability               | MS-021                | Dictionary fallback implemented; mocks available                 | Dev Team | ⏳ Not Started |
-| R002    | Stripe webhook signature validation     | MS-022                | Use Stripe CLI for local testing; mock webhooks available        | Dev Team | ⏳ Not Started |
-| R003    | Tiptap performance with large documents | MS-005                | Early performance testing with 50k char docs                     | Dev Team | ⏳ Not Started |
-| R004    | Sync conflicts data loss                | MS-020                | Comprehensive snapshot system; mock conflict scenarios           | Dev Team | ⏳ Not Started |
-| R005    | PWA installation discoverability        | MS-001                | Clear install prompts; test on multiple platforms                | Dev Team | ⏳ Not Started |
-| R006    | Supabase service outages                | MS-019                | Offline-first with PowerSync; mocks as fallback                  | Dev Team | ⏳ Not Started |
-| R007    | AI hallucination (incorrect terms)      | MS-021                | Validate against dictionary; test with mock edge cases           | Dev Team | ⏳ Not Started |
-| R008    | Mock/Real integration gaps              | MS-017-022            | Schema validation ensures mock/real parity                       | Dev Team | ⏳ Not Started |
-| R009    | Timeline pressure with 6-week schedule  | All                   | Weekly scope reviews; prioritize P0 features; defer enhancements | Dev Team | ⏳ Not Started |
-| R010    | React 19 / Next.js 15 ecosystem gaps    | MS-001                | Pin exact versions; test early; have fallback to React 18        | Dev Team | ⏳ Not Started |
-| R011    | PowerSync learning curve                | MS-019                | Allocate extra time; review documentation; build POC first       | Dev Team | ⏳ Not Started |
-
-**Status Legend:**
-
-- ⏳ Not Started - Risk identified, mitigation planned
-- 🔄 In Progress - Actively working on mitigation
-- ✅ Resolved - Risk mitigated
-- ⚠️ Active - Issue occurring, mitigation underway
+| Risk ID | Description                             | Affected Milestone(s) | Mitigation Plan                                                  |
+| ------- | --------------------------------------- | --------------------- | ---------------------------------------------------------------- |
+| R001    | OpenAI API unavailability               | MS-021                | Dictionary fallback implemented; mocks available                 |
+| R002    | Stripe webhook signature validation     | MS-022                | Use Stripe CLI for local testing; mock webhooks available        |
+| R003    | Tiptap performance with large documents | MS-005                | Early performance testing with 50k char docs                     |
+| R004    | Sync conflicts data loss                | MS-020                | Comprehensive snapshot system; mock conflict scenarios           |
+| R005    | PWA installation discoverability        | MS-001                | Clear install prompts; test on multiple platforms                |
+| R006    | Supabase service outages                | MS-019                | Offline-first with PowerSync; mocks as fallback                  |
+| R007    | AI hallucination (incorrect terms)      | MS-021                | Validate against dictionary; test with mock edge cases           |
+| R008    | Mock/Real integration gaps              | MS-017-022            | Schema validation ensures mock/real parity                       |
+| R009    | Timeline pressure with 6-week schedule  | All                   | Weekly scope reviews; prioritize P0 features; defer enhancements |
+| R010    | React 19 / Next.js 15 ecosystem gaps    | MS-001                | Pin exact versions; test early; have fallback to React 18        |
+| R011    | PowerSync learning curve                | MS-019                | Allocate extra time; review documentation; build POC first       |

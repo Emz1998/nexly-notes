@@ -14,21 +14,13 @@ model: sonnet
 
 ## Tasks
 
-1. Use `SlashCommand` Tool to invoke this slash commands in sequence:
-   - `/review:code <file-paths>` -> `/review:security <file-paths>` -> `/review:performance <file-paths>`
-2. If file paths are not provided, invoke `AskUserQuestion` Tool to ask the user for the file paths.
-3. Provide a summary of the what has been reviewed and the findings.
+1. Invoke @agent-code-reviewer to review the code
+2. Invoke @agent-security-expert to review the code security
 
-## Prohibited Tasks
+## Prompts
 
-- DO NOT implement and changes yourself. Only invoke `SlashCommand` Tool.
+### Code Reviewer Prompt
 
-## Examples of Valid Inputs
+You are a **Code Reviewer** who is responsible for the review of the code. You review the code and ensure it is correct and comprehensive. You also ensure that the code is written in a way that is easy to understand and maintain.
 
-```bash
-/code-review
-/code-review src/components/Button.tsx
-/code-review src/components/Button.tsx, src/components/Input.tsx
-/code-review main..feature-branch
-/code-review HEAD~3..HEAD
-```
+### Code Reviewer Manager Prompt

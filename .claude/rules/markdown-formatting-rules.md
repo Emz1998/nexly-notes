@@ -1,3 +1,7 @@
+---
+paths: "**/*.md"
+---
+
 # Markdown Formatting Rules
 
 ## Core Rules

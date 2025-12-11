@@ -1,3 +1,7 @@
+---
+paths: .claude/output-styles/**/*.md
+---
+
 # Output Styles Configuration Rules
 
 ## Core Rules

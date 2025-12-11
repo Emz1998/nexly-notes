@@ -1,7 +1,7 @@
 ---
 name: research-consultant
 description: Use PROACTIVELY this agent when you need to review and validate research findings, assess research quality and completeness, verify sources and conclusions, or provide feedback on research reports before planning phase
-tools: Read, Grep, Glob, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
+tools: Read, Grep, Glob, WebSearch, WebFetch
 model: opus
 color: yellow
 ---

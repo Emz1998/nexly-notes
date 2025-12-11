@@ -1,6 +1,10 @@
-# Commands Rules
+---
+paths: .claude/commands/**/*.md
+---
 
-## Commands Configuration Rules
+# Commands Configuration Rules
+
+## Core Rules
 
 1. Always analyze the existing commands in the directory and follow the same structure and approach
 2. Do not overbloat the file with too much information. Keep it concise and to the point. Follow the structure and approach of the existing commands.

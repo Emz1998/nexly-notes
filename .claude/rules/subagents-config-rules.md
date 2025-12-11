@@ -1,3 +1,7 @@
+---
+paths: .claude/agents/**/*.md
+---
+
 # Subagents Configuration Rules
 
 ## Directory Structure
@@ -20,7 +24,7 @@ project-root/
 ## Instructions for Writing Configuration
 
 - Analyze patterns of the existing agents in the directory and follow the same structure and approach
-- Must be composed of 4 sections: YAML Frontmatter Details, Responsibilities, Workflow and Rules 
+- Must be composed of 4 sections: YAML Frontmatter Details, Responsibilities, Workflow and Rules
 - Maximum of 3 responsibilities per agent with 5 bullet points explaining the scope of this responsibility
 - Maximum of 3 phases workflow with 5 tasks per phase in bullet points
 - Rules section should have "Core Principles" and "Prohibited Tasks/Approches" sub-sections with 5 tasks for each in bullet points

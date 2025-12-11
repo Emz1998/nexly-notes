@@ -1,4 +1,10 @@
+---
+paths: "**/*.py"
+---
+
 # Python Coding Rules & Style Guide
+
+## Core Rules
 
 1. Always use snake_case for variable names
 2. Use only single line comments `#`

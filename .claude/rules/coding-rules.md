@@ -1,3 +1,7 @@
+---
+paths: src/**/*.{ts,tsx,js,jsx}
+---
+
 # Coding Rules & Style Guide
 
 ## 1. Core Principles

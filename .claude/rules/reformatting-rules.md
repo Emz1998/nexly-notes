@@ -1,3 +1,7 @@
+---
+paths: "**/*.md"
+---
+
 # Reformatting Rules
 
 ## Core Rules
